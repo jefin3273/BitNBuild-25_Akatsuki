@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Paperclip, Send } from "lucide-react"
-import { supabaseClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { participantsKey } from "./helpers"
 
 export function MessageComposer({
@@ -20,7 +20,6 @@ export function MessageComposer({
   receiverId: string
   onSend: (content: string, files: File[]) => void
 }) {
-  const supabase = supabaseClient()
   const [value, setValue] = useState("")
   const [files, setFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)

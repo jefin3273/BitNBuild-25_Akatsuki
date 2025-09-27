@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { supabaseClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export function TypingIndicator({
   projectId,
@@ -12,7 +12,6 @@ export function TypingIndicator({
   userId: string
   receiverId: string
 }) {
-  const supabase = supabaseClient()
   const [show, setShow] = useState(false)
   const timerRef = useRef<any>(null)
 
