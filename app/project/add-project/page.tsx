@@ -1,17 +1,20 @@
 "use client"
 import React, { useState } from 'react'
-import { 
-  DollarSign, 
-  Calendar, 
-  FileText, 
-  Tag, 
+import {
+  DollarSign,
+  Calendar,
+  FileText,
+  Tag,
   Clock,
   CheckCircle,
   AlertCircle,
   ArrowLeft,
-  Send
+  Send,
+  Shield,
+  UserX
 } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
+import { useAuth } from '@/hooks/useAuth'
 
 // Type definitions
 interface ProjectFormData {
@@ -24,6 +27,8 @@ interface ProjectFormData {
 }
 
 const AddProject: React.FC = () => {
+  const { user: currentAuthUser, profile: currentUserProfile, loading: authLoading } = useAuth()
+
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -98,7 +103,7 @@ const AddProject: React.FC = () => {
       const deadlineDate = new Date(formData.deadline)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      
+
       if (deadlineDate <= today) {
         newErrors.deadline = 'Deadline must be in the future'
       }
@@ -110,6 +115,11 @@ const AddProject: React.FC = () => {
 
   // Handle form submission
   const handleSubmit = async () => {
+    if (!currentUserProfile || currentUserProfile.role !== 'client') {
+      setError('Only clients can create projects')
+      return
+    }
+
     if (!validateForm()) {
       return
     }
@@ -118,28 +128,31 @@ const AddProject: React.FC = () => {
     setError(null)
 
     try {
-      // For demo purposes, using a placeholder client_id
-      // In a real app, you would get this from the authenticated user
+      // Create deadline timestamp in the correct format
+      const deadlineTimestamp = new Date(formData.deadline + 'T23:59:59').toISOString()
+
       const { data, error: insertError } = await supabase
         .from('projects')
         .insert({
-          client_id: 1, // Placeholder client ID
+          client_id: parseInt(currentUserProfile.id), // Use current user's ID as integer
           title: formData.title.trim(),
           description: formData.description.trim(),
           category: formData.category,
           budget_min: formData.budget_min * 100, // Convert to cents
           budget_max: formData.budget_max * 100, // Convert to cents
-          deadline: new Date(formData.deadline).toISOString(),
+          deadline: deadlineTimestamp,
           status: 'open'
         })
         .select()
 
       if (insertError) {
+        console.error('Supabase insert error:', insertError)
         throw insertError
       }
 
+      console.log('Project created successfully:', data)
       setSuccess(true)
-      
+
       // Reset form after success
       setTimeout(() => {
         setFormData({
@@ -155,7 +168,11 @@ const AddProject: React.FC = () => {
 
     } catch (err) {
       console.error('Error creating project:', err)
-      setError('Failed to create project. Please try again.')
+      setError(
+        typeof err === 'object' && err !== null && 'message' in err && typeof (err as Error).message === 'string'
+          ? (err as Error).message
+          : 'Failed to create project. Please try again.'
+      )
     } finally {
       setSubmitting(false)
     }
@@ -168,12 +185,90 @@ const AddProject: React.FC = () => {
     return tomorrow.toISOString().split('T')[0]
   }
 
+  // Loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl mb-2">Loading...</div>
+          <div className="text-sm text-muted-foreground">Authenticating user...</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Not authenticated
+  if (!currentAuthUser || !currentUserProfile) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <UserX className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <div className="text-xl mb-2">Authentication Required</div>
+          <div className="text-sm text-muted-foreground mb-4">
+            Please log in to post a project
+          </div>
+          <button
+            onClick={() => window.location.href = '/login'}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Not a client
+  if (currentUserProfile.role !== 'client') {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <Shield className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+          <div className="text-xl mb-2">Access Restricted</div>
+          <div className="text-sm text-muted-foreground mb-4">
+            Only clients can post projects. Your account is registered as a <strong>{currentUserProfile.role}</strong>.
+          </div>
+          <div className="text-xs text-muted-foreground mb-6">
+            If you need to change your account type, please contact support or update your profile settings.
+          </div>
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mt-15 mb-2">Post a New Project</h1>
+          {/* User Info */}
+          <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Posting as:</p>
+                  <p className="font-semibold text-foreground">
+                    {currentUserProfile.name} (Client)
+                  </p>
+                </div>
+              </div>
+              <div className="text-right text-xs text-muted-foreground">
+                <p>ID: {currentUserProfile.id}</p>
+                <p>Email: {currentUserProfile.email}</p>
+              </div>
+            </div>
+          </div>
+
+          <h1 className="text-3xl font-bold text-foreground mb-2">Post a New Project</h1>
           <p className="text-muted-foreground text-lg">
             Connect with talented student freelancers on GigCampus
           </p>
@@ -218,17 +313,16 @@ const AddProject: React.FC = () => {
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  errors.title ? 'border-red-300' : 'border-border'
-                }`}
+                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.title ? 'border-red-300' : 'border-border'
+                  }`}
                 placeholder="e.g., Build a responsive website for my startup"
-                maxLength={50}
+                maxLength={100}
               />
               {errors.title && (
                 <p className="text-red-500 text-sm mt-1">{errors.title}</p>
               )}
               <p className="text-muted-foreground text-xs mt-1">
-                {formData.title.length}/50 characters
+                {formData.title.length}/100 characters
               </p>
             </div>
 
@@ -242,11 +336,10 @@ const AddProject: React.FC = () => {
                 {categories.map((category) => (
                   <div
                     key={category.value}
-                    className={`flex flex-col p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
-                      formData.category === category.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-border'
-                    }`}
+                    className={`flex flex-col p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${formData.category === category.value
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-border'
+                      }`}
                     onClick={() => handleInputChange('category', category.value)}
                   >
                     <span className="font-medium text-foreground">{category.label}</span>
@@ -265,9 +358,8 @@ const AddProject: React.FC = () => {
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={6}
-                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${
-                  errors.description ? 'border-red-300' : 'border-border'
-                }`}
+                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${errors.description ? 'border-red-300' : 'border-border'
+                  }`}
                 placeholder="Describe your project in detail. Include requirements, expectations, deliverables, and any specific skills needed..."
                 maxLength={2000}
               />
@@ -288,11 +380,12 @@ const AddProject: React.FC = () => {
                 </label>
                 <input
                   type="number"
+                  min="1"
+                  max="10000"
                   value={formData.budget_min || ''}
                   onChange={(e) => handleInputChange('budget_min', parseInt(e.target.value) || 0)}
-                  className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.budget_min ? 'border-red-300' : 'border-border'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.budget_min ? 'border-red-300' : 'border-border'
+                    }`}
                   placeholder="50"
                 />
                 {errors.budget_min && (
@@ -306,11 +399,12 @@ const AddProject: React.FC = () => {
                 </label>
                 <input
                   type="number"
+                  min="1"
+                  max="10000"
                   value={formData.budget_max || ''}
                   onChange={(e) => handleInputChange('budget_max', parseInt(e.target.value) || 0)}
-                  className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.budget_max ? 'border-red-300' : 'border-border'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.budget_max ? 'border-red-300' : 'border-border'
+                    }`}
                   placeholder="200"
                 />
                 {errors.budget_max && (
@@ -318,6 +412,18 @@ const AddProject: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Budget Preview */}
+            {formData.budget_min > 0 && formData.budget_max > 0 && formData.budget_min < formData.budget_max && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-blue-800 text-sm">
+                  <strong>Budget Range:</strong> ${formData.budget_min.toLocaleString()} - ${formData.budget_max.toLocaleString()}
+                  <span className="text-blue-600 ml-2">
+                    (stored as {(formData.budget_min * 100).toLocaleString()} - {(formData.budget_max * 100).toLocaleString()} cents)
+                  </span>
+                </p>
+              </div>
+            )}
 
             {/* Deadline */}
             <div>
@@ -330,12 +436,21 @@ const AddProject: React.FC = () => {
                 value={formData.deadline}
                 onChange={(e) => handleInputChange('deadline', e.target.value)}
                 min={getMinDate()}
-                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  errors.deadline ? 'border-red-300' : 'border-border'
-                }`}
+                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.deadline ? 'border-red-300' : 'border-border'
+                  }`}
               />
               {errors.deadline && (
                 <p className="text-red-500 text-sm mt-1">{errors.deadline}</p>
+              )}
+              {formData.deadline && (
+                <p className="text-muted-foreground text-xs mt-1">
+                  Deadline will be set to end of day: {new Date(formData.deadline + 'T23:59:59').toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
               )}
             </div>
 
@@ -357,7 +472,7 @@ const AddProject: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Send className=" w-4 h-4 mr-2" />
+                    <Send className="w-4 h-4 mr-2" />
                     Post Project
                   </>
                 )}
