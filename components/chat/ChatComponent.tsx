@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { supabaseClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient"
 import { PAGE_SIZE, type ChatMessage, participantsKey } from "./helpers"
 import { MessageBubble } from "./message-bubble"
 import { MessageComposer } from "./message-composer"
@@ -92,7 +92,6 @@ export default function ChatComponent({
   folder,
   uploadPreset,
 }: Props) {
-  const supabase = supabaseClient()
   const [error, setError] = useState<string | null>(null)
   const [pendingQueue, setPendingQueue] = useState<ChatMessage[]>([])
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null)
@@ -142,7 +141,7 @@ export default function ChatComponent({
   useEffect(() => {
     const channel = supabase
       .channel(`messages:${projectId}`, { config: { presence: { key: userId } } })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload: { new: any }) => {
         const m = payload.new as any
         const match =
           m.project_id === projectId &&
@@ -150,7 +149,7 @@ export default function ChatComponent({
             (m.sender_id === receiverId && m.receiver_id === userId))
 
         if (match) {
-         mutate((prev) => {
+          mutate((prev) => {
             const first = prev?.[0] ?? []
             return [[...first, { ...m, _status: "sent" }] as ChatMessage[], ...(prev?.slice(1) || [])]
           }, false)
@@ -161,7 +160,7 @@ export default function ChatComponent({
     return () => {
       channel.unsubscribe()
     }
-  }, [supabase, projectId, userId, receiverId, mutate])
+  }, [projectId, userId, receiverId, mutate])
 
   // Mark reads for messages from the other user
   useEffect(() => {
@@ -183,16 +182,9 @@ export default function ChatComponent({
       }
     }
     void doUpsert()
-  }, [messages, receiverId, supabase, projectId, userId, lastSeenAt])
+  }, [messages, receiverId, projectId, userId, lastSeenAt])
 
-  // Compute "Seen" for last own message by checking if the other user has read a newer or equal message
-  const isLastOwnAndSeen = useMemo(() => {
-    const lastOwn = [...messages].filter((m) => m.sender_id === userId).at(-1)
-    if (!lastOwn) return false
-    // Query reads for receiver
-    return false // updated after effect below
-  }, [messages, userId])
-
+  // Compute "Seen"
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set())
   useEffect(() => {
     const fetchReads = async () => {
@@ -213,7 +205,7 @@ export default function ChatComponent({
       }
     }
     void fetchReads()
-  }, [messages, supabase, projectId, userId, receiverId])
+  }, [messages, projectId, userId, receiverId])
 
   // Compose full list including pending queue
   const fullMessages = useMemo(() => {
@@ -224,7 +216,7 @@ export default function ChatComponent({
   async function sendMessage(content: string, files: File[]) {
     setError(null)
 
-    // 1) Add optimistic pending messages (text and each file upload placeholder)
+    // 1) Optimistic pending messages
     const now = new Date().toISOString()
     const optimistic: ChatMessage[] = []
 
@@ -266,10 +258,9 @@ export default function ChatComponent({
 
     setPendingQueue((prev) => [...prev, ...optimistic])
 
-    // 2) Upload media (with retry)
+    // 2) Upload media with retry; 3) Insert; 4) Clear pending; 5) mutate
     try {
       const uploaded = await uploadToCloudinary(files, { folder, uploadPreset })
-      // Start building payloads (text + each uploaded media as separate messages)
       const toInsert: Partial<ChatMessage>[] = []
 
       if (content.trim()) {
@@ -293,27 +284,22 @@ export default function ChatComponent({
         })
       }
 
-      // 3) Insert into Supabase
       if (toInsert.length) {
         const { data, error } = await supabase.from("messages").insert(toInsert).select("*")
         if (error) throw error
 
-        // 4) Replace optimistic with confirmed
         setPendingQueue((prev) => {
           const rest = prev.filter((m) => m._status !== "pending")
           return rest
         })
 
-        // Fire callback for last message
         if (onMessageSent && data && data.length) {
-          data.forEach((m) => onMessageSent({ ...(m as any), _status: "sent" }))
+          data.forEach((m: any) => onMessageSent({ ...(m as any), _status: "sent" }))
         }
 
-        // 5) mutate to include new messages
         mutate()
       }
     } catch (e: any) {
-      // Mark all pending as failed
       setPendingQueue((prev) => prev.map((m) => (m._status === "pending" ? { ...m, _status: "failed" } : m)))
       setError(e?.message || "Failed to send message")
     }
@@ -322,13 +308,9 @@ export default function ChatComponent({
   function retryFailed() {
     const failed = pendingQueue.filter((m) => m._status === "failed")
     const content = failed.find((m) => m.content)?.content || ""
-    const filesCount = failed.filter((m) => m.media_url && m._status === "failed").length
-    // can't reconstitute files from failed, so show banner instructing user to reattach
     setError("Some uploads failed. Please reattach files and resend the message.")
-    // Remove failed bubbles
     setPendingQueue((prev) => prev.filter((m) => m._status !== "failed"))
     if (content) {
-      // try re-sending text-only content immediately
       void sendMessage(content, [])
     }
   }
@@ -353,10 +335,9 @@ export default function ChatComponent({
 
       <ScrollArea className="flex-1 px-3">
         <div ref={scrollRef} className="mx-auto w-full max-w-2xl py-3 flex flex-col gap-2">
-          {fullMessages.map((m, idx) => {
+          {fullMessages.map((m) => {
             const isOwn = m.sender_id === userId
             const isLastOwn = isOwn && fullMessages.filter((x) => x.sender_id === userId).at(-1)?.id === m.id
-
             const seen = isLastOwn && (seenIds.has(m.id) || false)
 
             return (
@@ -364,7 +345,6 @@ export default function ChatComponent({
                 key={m.id + m._tempId}
                 onClick={() => {
                   if (m._status === "failed") {
-                    // remove failed and let user re-send
                     setPendingQueue((prev) => prev.filter((x) => x !== m))
                   }
                 }}

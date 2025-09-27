@@ -1,4 +1,4 @@
-// lib/types.ts - Create this as a separate file for types
+// lib/types.ts
 export type UserRole = "client" | "freelancer";
 
 export interface Database {
