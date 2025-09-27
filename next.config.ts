@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
         hostname: "ik.imagekit.io",
       },
       {
-        hostname: "avatar.vercel.sh",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },
