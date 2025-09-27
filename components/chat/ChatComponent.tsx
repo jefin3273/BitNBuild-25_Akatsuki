@@ -141,7 +141,7 @@ export default function ChatComponent({
   useEffect(() => {
     const channel = supabase
       .channel(`messages:${projectId}`, { config: { presence: { key: userId } } })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload: { new: any }) => {
         const m = payload.new as any
         const match =
           m.project_id === projectId &&
@@ -294,7 +294,7 @@ export default function ChatComponent({
         })
 
         if (onMessageSent && data && data.length) {
-          data.forEach((m) => onMessageSent({ ...(m as any), _status: "sent" }))
+          data.forEach((m: any) => onMessageSent({ ...(m as any), _status: "sent" }))
         }
 
         mutate()
