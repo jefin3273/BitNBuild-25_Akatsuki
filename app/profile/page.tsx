@@ -98,7 +98,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
 
   // Use a default userId if none provided (for testing)
-  const targetUserId = userId || "2";
+  const targetUserId = userId || "1";
 
   console.log("FreelancerProfile mounted with userId:", targetUserId);
 
@@ -462,14 +462,6 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
                 </div>
 
                 <div className="flex flex-wrap gap-4">
-                  <button className="flex items-center px-6 py-3 rounded-lg font-semibold bg-foreground text-background hover:bg-foreground/90 transition-colors">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Contact Me
-                  </button>
-                  <button className="flex items-center px-6 py-3 rounded-lg font-semibold bg-muted text-foreground hover:bg-muted/80 border border-border transition-colors">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Schedule Call
-                  </button>
                   {currentUser && currentUser.role === "client" && (
                     <button
                       onClick={() => setShowReviewModal(true)}
