@@ -3,7 +3,7 @@ import { Shield, Users } from "lucide-react";
 
 export default function FeaturesSection() {
   return (
-    <section className="pb-16 md:pb-32 bg-transparent">
+    <section className="py-16 md:py-32 bg-transparent">
       <div className="mx-auto max-w-5xl px-6">
         <div className="relative">
           <div className="relative z-10 grid grid-cols-6 gap-3">

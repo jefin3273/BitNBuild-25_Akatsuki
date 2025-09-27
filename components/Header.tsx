@@ -14,10 +14,10 @@ import {
 } from "@clerk/nextjs";
 
 const menuItems = [
-  { name: "Features", href: "#link" },
-  { name: "Solution", href: "#link" },
-  { name: "Pricing", href: "#link" },
-  { name: "About", href: "#link" },
+  { name: "Features", href: "/#features" },
+  { name: "Solution", href: "/" },
+  { name: "Profile", href: "/profile" },
+  { name: "About", href: "/#about" },
 ];
 
 export const HeroHeader = () => {

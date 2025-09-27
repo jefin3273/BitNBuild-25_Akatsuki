@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { HeroHeader } from "@/components/Header";
+import FooterSection from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
         >
           <HeroHeader />
           {children}
+          <FooterSection />
         </body>
       </html>
     </ClerkProvider>
