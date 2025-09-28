@@ -8,7 +8,6 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  ArrowLeft,
   Send,
   Shield,
   UserX
@@ -42,7 +41,7 @@ const AddProject: React.FC = () => {
     deadline: ''
   })
 
-  const [errors, setErrors] = useState<Partial<ProjectFormData>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof ProjectFormData, string>>>({})
 
   // Category options
   const categories = [
@@ -71,7 +70,7 @@ const AddProject: React.FC = () => {
 
   // Validate form
   const validateForm = (): boolean => {
-    const newErrors: Partial<ProjectFormData> = {}
+    const newErrors: Partial<Record<keyof ProjectFormData, string>> = {}
 
     if (!formData.title.trim()) {
       newErrors.title = 'Project title is required'
@@ -134,7 +133,7 @@ const AddProject: React.FC = () => {
       const { data, error: insertError } = await supabase
         .from('projects')
         .insert({
-          client_id: parseInt(currentUserProfile.id), // Use current user's ID as integer
+          client_id: currentUserProfile.id, // Use current user's ID as number
           title: formData.title.trim(),
           description: formData.description.trim(),
           category: formData.category,
@@ -169,8 +168,8 @@ const AddProject: React.FC = () => {
     } catch (err) {
       console.error('Error creating project:', err)
       setError(
-        typeof err === 'object' && err !== null && 'message' in err && typeof (err as Error).message === 'string'
-          ? (err as Error).message
+        typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message?: string }).message)
           : 'Failed to create project. Please try again.'
       )
     } finally {
