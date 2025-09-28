@@ -24,7 +24,7 @@ export const HeroHeader = () => {
   React.useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
-    }
+    };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -44,11 +44,10 @@ export const HeroHeader = () => {
 
   const menuItems = [
     { name: "Features", href: "/#features" },
-    { name: "Solution", href: "/" },
+    { name: "Leaderboard", href: "/leaderboard" },
     { name: "Profile", onClick: handleDashboardRedirect }, // run function instead of href
     { name: "About", href: "/about" },
   ];
-
 
   if (loading) {
     return (
@@ -56,7 +55,11 @@ export const HeroHeader = () => {
         <nav className="fixed z-20 w-full px-2">
           <div className="mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12">
             <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
-              <Link href="/" aria-label="home" className="flex items-center space-x-2">
+              <Link
+                href="/"
+                aria-label="home"
+                className="flex items-center space-x-2"
+              >
                 GigCampus
               </Link>
               <div className="animate-pulse">
@@ -79,7 +82,7 @@ export const HeroHeader = () => {
           className={cn(
             "mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12",
             isScrolled &&
-            "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5"
+              "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5"
           )}
         >
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
@@ -152,7 +155,9 @@ export const HeroHeader = () => {
                     <DropdownMenuContent align="end" className="w-56">
                       <div className="flex flex-col space-y-1 p-2">
                         <p className="text-sm font-medium">{profile?.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
                         <p className="text-xs bg-muted px-2 py-1 rounded capitalize">
                           {profile?.role}
                         </p>
@@ -203,6 +208,6 @@ export const HeroHeader = () => {
           </div>
         </div>
       </nav>
-    </header >
+    </header>
   );
 };
