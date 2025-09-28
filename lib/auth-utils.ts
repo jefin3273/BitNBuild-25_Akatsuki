@@ -10,6 +10,27 @@ export interface SignUpData {
   university_id?: number;
 }
 
+// Define the user profile interface to match your database schema
+export interface UserProfile {
+  id?: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  university_id?: number | null;
+  is_verified_student?: boolean | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Type for inserting new user data
+type UserInsert = {
+  email: string;
+  name: string;
+  role: UserRole;
+  university_id?: number | null;
+  is_verified_student?: boolean | null;
+};
+
 export const signUp = async (userData: SignUpData) => {
   try {
     // Sign up with Supabase Auth
@@ -24,15 +45,18 @@ export const signUp = async (userData: SignUpData) => {
 
     // Create user profile in database
     if (authData.user) {
-      const { error: profileError } = await supabase
+      const profileData: UserInsert = {
+        email: userData.email,
+        name: userData.name,
+        role: userData.role,
+        university_id: userData.university_id || null,
+        is_verified_student: userData.role === "client" ? false : null,
+      };
+
+      // Use type assertion for now until proper types are set up
+      const { error: profileError } = await (supabase as any)
         .from("users")
-        .insert({
-          email: userData.email,
-          name: userData.name,
-          role: userData.role,
-          university_id: userData.university_id,
-          is_verified_student: userData.role === "client" ? false : null,
-        });
+        .insert(profileData);
 
       if (profileError) {
         // If profile creation fails, we should clean up the auth user
@@ -110,5 +134,46 @@ export const updatePassword = async (newPassword: string) => {
   } catch (error) {
     console.error("Update password error:", error);
     return { error };
+  }
+};
+
+// Helper function to get user profile
+export const getUserProfile = async (userId: string) => {
+  try {
+    const { data, error } = await (supabase as any)
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data as UserProfile, error: null };
+  } catch (error) {
+    console.error("Get user profile error:", error);
+    return { data: null, error };
+  }
+};
+
+// Helper function to update user profile
+export const updateUserProfile = async (userId: string, updates: Partial<UserProfile>) => {
+  try {
+    const { data, error } = await (supabase as any)
+      .from("users")
+      .update(updates)
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data as UserProfile, error: null };
+  } catch (error) {
+    console.error("Update user profile error:", error);
+    return { data: null, error };
   }
 };
