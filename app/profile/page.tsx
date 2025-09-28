@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-/* eslint-disable @typescript-eslint/no-unused-vars */
-=======
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
 "use client";
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Star,
   MapPin,
@@ -15,8 +11,6 @@ import {
   Briefcase,
   MessageSquare,
   Award,
-  Zap,
-  TrendingUp,
   Mail,
   Phone,
   Plus,
@@ -24,11 +18,7 @@ import {
   Send,
 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-<<<<<<< HEAD
-import { useAuth } from "@/hooks/useAuth";
-=======
 import { Card } from "@/components/ui/card";
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
 
 // Type definitions matching your Supabase schema
 interface User {
@@ -82,15 +72,10 @@ interface Review {
 }
 
 interface FreelancerProfileProps {
-  userId?: string; // Make optional with default
+  userId?: string;
 }
 
 const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
-<<<<<<< HEAD
-  const { user: currentAuthUser, profile: currentUserProfile, loading: authLoading } = useAuth();
-
-=======
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
   const [activeTab, setActiveTab] = useState<"projects" | "reviews">(
     "projects"
   );
@@ -101,24 +86,11 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [newReview, setNewReview] = useState({
     rating: 5,
     comment: "",
     project_id: "",
   });
-<<<<<<< HEAD
-  const [error, setError] = useState<string | null>(null);
-  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
-
-  // Use current user's ID if no userId prop provided, otherwise use the provided userId
-  const targetUserId = userId || currentUserProfile?.id;
-  const isViewingOwnProfile = currentUserProfile?.id === targetUserId;
-
-  console.log("FreelancerProfile mounted with userId:", targetUserId);
-  console.log("Current user profile:", currentUserProfile);
-  console.log("Is viewing own profile:", isViewingOwnProfile);
-=======
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
@@ -129,28 +101,33 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   console.log("FreelancerProfile mounted with userId:", targetUserId);
 
   // Fetch current user (for review permissions)
-  const fetchCurrentUser = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+  const fetchCurrentUser = useCallback(async () => {
+    try {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      if (authUser) {
+        const { data: userData } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
 
-      if (userData) {
-        setCurrentUser(userData);
+        if (userData) {
+          const typedUserData = userData as User;
+          setCurrentUser(typedUserData);
 
-        // If user is a client, fetch projects they've worked on with this freelancer
-        if (userData.role === "client") {
-          await fetchAvailableProjects(userData.id);
+          // If user is a client, fetch projects they've worked on with this freelancer
+          if (typedUserData.role === "client") {
+            await fetchAvailableProjects(typedUserData.id);
+          }
         }
       }
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      setError("Failed to fetch current user");
     }
-  };
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
+  }, []);
 
   // Fetch projects that the client has worked on with this freelancer
   const fetchAvailableProjects = async (clientId: string) => {
@@ -172,17 +149,10 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   };
 
   // Fetch freelancer data
-  const fetchFreelancerData = async () => {
-<<<<<<< HEAD
-    if (!targetUserId) {
-      setLoading(false);
-      return;
-    }
-
-=======
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
+  const fetchFreelancerData = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
 
       console.log("Fetching data for userId:", targetUserId);
 
@@ -199,22 +169,23 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
         throw userError;
       }
       console.log("User data:", userData);
-      setUser(userData);
+      const typedUserData = userData as User;
+      setUser(typedUserData);
 
       // Step 2: Fetch university if user has university_id
-      if (userData?.university_id) {
+      if (typedUserData?.university_id) {
         console.log("Step 2: Fetching university...");
         const { data: universityData, error: universityError } = await supabase
           .from("universities")
           .select("*")
-          .eq("id", userData.university_id)
+          .eq("id", typedUserData.university_id)
           .single();
 
         if (universityError) {
           console.error("University fetch error:", universityError);
         } else {
           console.log("University data:", universityData);
-          setUniversity(universityData);
+          setUniversity(universityData as University);
         }
       }
 
@@ -267,34 +238,37 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
         console.log("Reviews data:", reviewsData);
         setReviews(reviewsData || []);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching freelancer data:", error);
       console.error("Full error object:", JSON.stringify(error, null, 2));
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [targetUserId]);
 
   // Add a new review
   const handleAddReview = async () => {
-<<<<<<< HEAD
-    if (!currentUserProfile || !newReview.project_id) return;
-=======
     if (!currentUser || !newReview.project_id) return;
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
 
     try {
-      const { data, error } = await supabase.from("reviews").insert({
-        project_id: newReview.project_id,
-<<<<<<< HEAD
-        reviewer_id: currentUserProfile.id,
-=======
-        reviewer_id: currentUser.id,
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
-        reviewed_id: targetUserId,
+      // Type assertion for the insert data
+      const insertData = {
+        project_id: Number(newReview.project_id),
+        reviewer_id: Number(currentUser.id),
+        reviewed_id: Number(targetUserId),
         rating: newReview.rating,
         comment: newReview.comment,
-      });
+      };
+
+      const { error } = await supabase
+        .from("reviews")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .insert(insertData as any); // Use 'as any' to bypass type checking temporarily
 
       if (error) throw error;
 
@@ -309,23 +283,9 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
   useEffect(() => {
     console.log("useEffect triggered with targetUserId:", targetUserId);
-<<<<<<< HEAD
-
-    // Wait for auth to load before fetching data
-    if (!authLoading && targetUserId) {
-      fetchFreelancerData();
-
-      // If current user is a client and not viewing their own profile, fetch available projects
-      if (currentUserProfile && currentUserProfile.role === "client" && !isViewingOwnProfile) {
-        fetchAvailableProjects(currentUserProfile.id);
-      }
-    }
-  }, [targetUserId, authLoading, currentUserProfile]);
-=======
     fetchCurrentUser();
     fetchFreelancerData();
-  }, [targetUserId]);
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
+  }, [targetUserId, fetchCurrentUser, fetchFreelancerData]);
 
   const formatCurrency = (cents: number) => {
     return `$${(cents / 100).toLocaleString()}`;
@@ -339,11 +299,11 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = () => {
     return "bg-muted text-foreground/80 border-border";
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = () => {
     return "bg-muted text-foreground/80 border-border";
   };
 
@@ -351,18 +311,10 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-<<<<<<< HEAD
         className={`w-4 h-4 ${i < Math.floor(rating)
           ? "fill-current text-foreground"
           : "text-muted-foreground"
           }`}
-=======
-        className={`w-4 h-4 ${
-          i < Math.floor(rating)
-            ? "fill-current text-foreground"
-            : "text-muted-foreground"
-        }`}
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
       />
     ));
   };
@@ -374,18 +326,10 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-<<<<<<< HEAD
         className={`w-6 h-6 cursor-pointer transition-colors ${i < rating
           ? "fill-current text-yellow-500"
           : "text-muted-foreground hover:text-yellow-300"
           }`}
-=======
-        className={`w-6 h-6 cursor-pointer transition-colors ${
-          i < rating
-            ? "fill-current text-yellow-500"
-            : "text-muted-foreground hover:text-yellow-300"
-        }`}
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
         onClick={() => onChange(i + 1)}
       />
     ));
@@ -418,34 +362,13 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
     },
   ];
 
-<<<<<<< HEAD
-  if (authLoading || loading) {
-=======
   if (loading) {
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center">
           <div className="text-xl mb-2">Loading...</div>
           <div className="text-sm text-muted-foreground">
-<<<<<<< HEAD
-            {authLoading ? "Authenticating..." : `Fetching user data for: ${targetUserId}`}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!currentAuthUser || !currentUserProfile) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl mb-2">Authentication Required</div>
-          <div className="text-sm text-muted-foreground">
-            Please log in to view this profile
-=======
             Fetching user data for: {targetUserId}
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
           </div>
         </div>
       </div>
@@ -484,38 +407,9 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
   return (
     <div className="min-h-screen pt-16 bg-background text-foreground">
-<<<<<<< HEAD
-      {/* Current User Info Bar - Only show when viewing someone else's profile */}
-      {!isViewingOwnProfile && (
-        <div className="w-full px-6 md:px-8 py-4 bg-muted/30 border-b border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center border border-border">
-                <User className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Viewing as:</p>
-                <p className="font-semibold text-foreground">
-                  {currentUserProfile.name} ({currentUserProfile.role})
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Your ID: {currentUserProfile.id}</p>
-              <p className="text-xs text-muted-foreground">Auth ID: {currentAuthUser.id}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="w-full px-6 md:px-8 py-8">
-        {/* Profile Header */}
-        <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden mb-8">
-=======
       <div className="sm:w-[80%] w-full mx-auto px-6 md:px-8 py-8">
         {/* Profile Header */}
         <Card className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden mb-8">
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
           <div className="px-8 py-10">
             <div className="flex flex-col lg:flex-row items-center lg:items-start space-y-6 lg:space-y-0 lg:space-x-8">
               <div className="relative">
@@ -534,14 +428,6 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
                   <h1 className="text-4xl font-bold text-foreground">
                     {user.name}
                   </h1>
-<<<<<<< HEAD
-                  {isViewingOwnProfile && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
-                      Your Profile
-                    </span>
-                  )}
-=======
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
                   {user.is_verified_student && (
                     <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
                       Verified Student
@@ -551,15 +437,9 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
                 <div className="flex flex-wrap justify-center lg:justify-start items-center gap-6 text-muted-foreground mb-6">
                   <div className="flex items-center space-x-1">
-<<<<<<< HEAD
                     {renderStars(profile?.reputation_score || 0)}
                     <span className="ml-2 font-semibold text-foreground">
                       {(profile?.reputation_score || 0).toFixed(1)}
-=======
-                    {renderStars(profile.reputation_score)}
-                    <span className="ml-2 font-semibold text-foreground">
-                      {profile.reputation_score.toFixed(1)}
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
                     </span>
                     <span className="text-sm">({reviews.length} reviews)</span>
                   </div>
@@ -573,11 +453,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
                     <Calendar className="w-4 h-4 mr-2" />
                     Member since {formatDate(user.created_at)}
                   </div>
-<<<<<<< HEAD
                   {profile?.hourly_rate && (
-=======
-                  {profile.hourly_rate && (
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
                     <div className="flex items-center font-semibold text-foreground">
                       <DollarSign className="w-4 h-4 mr-1" />$
                       {profile.hourly_rate}/hour
@@ -586,42 +462,21 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
                 </div>
 
                 <p className="text-foreground/80 text-lg leading-relaxed mb-6">
-<<<<<<< HEAD
                   {profile?.bio || "No bio available"}
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {profile?.skills?.map((skill, index) => (
-=======
-                  {profile.bio}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {profile.skills.map((skill, index) => (
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
                     <span
                       key={index}
                       className="px-3 py-1 rounded-full text-sm font-medium bg-muted text-foreground/80 border border-border"
                     >
                       {skill}
                     </span>
-                  ))}
+                  )) || null}
                 </div>
 
                 <div className="flex flex-wrap gap-4">
-<<<<<<< HEAD
-                  {currentUserProfile &&
-                    currentUserProfile.role === "client" &&
-                    !isViewingOwnProfile && (
-                      <button
-                        onClick={() => setShowReviewModal(true)}
-                        className="flex items-center px-6 py-3 rounded-lg font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Review
-                      </button>
-                    )}
-=======
                   <button className="flex items-center px-6 py-3 rounded-lg font-semibold bg-foreground text-background hover:bg-foreground/90 transition-colors">
                     <Mail className="w-4 h-4 mr-2" />
                     Contact Me
@@ -639,16 +494,11 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
                       Add Review
                     </button>
                   )}
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
                 </div>
               </div>
             </div>
           </div>
-<<<<<<< HEAD
-        </div>
-=======
         </Card>
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -680,18 +530,10 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
             <nav className="flex">
               <button
                 onClick={() => setActiveTab("projects")}
-<<<<<<< HEAD
                 className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${activeTab === "projects"
                   ? "text-foreground border-b-2 border-foreground bg-muted/40"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                   }`}
-=======
-                className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${
-                  activeTab === "projects"
-                    ? "text-foreground border-b-2 border-foreground bg-muted/40"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                }`}
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
               >
                 <div className="flex items-center justify-center space-x-2">
                   <Briefcase className="w-5 h-5" />
@@ -700,18 +542,10 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
               </button>
               <button
                 onClick={() => setActiveTab("reviews")}
-<<<<<<< HEAD
                 className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${activeTab === "reviews"
                   ? "text-foreground border-b-2 border-foreground bg-muted/40"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                   }`}
-=======
-                className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${
-                  activeTab === "reviews"
-                    ? "text-foreground border-b-2 border-foreground bg-muted/40"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                }`}
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
               >
                 <div className="flex items-center justify-center space-x-2">
                   <MessageSquare className="w-5 h-5" />
@@ -751,9 +585,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
                         </div>
                         <div className="flex flex-col sm:items-end space-y-2">
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                              project.status
-                            )}`}
+                            className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor()}`}
                           >
                             {project.status.replace("_", " ").toUpperCase()}
                           </span>
@@ -762,9 +594,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
                       <div className="flex flex-wrap items-center gap-4 text-sm">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(
-                            project.category
-                          )}`}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold border ${getCategoryColor()}`}
                         >
                           {project.category.toUpperCase()}
                         </span>
@@ -828,11 +658,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
                       </div>
                       <div className="bg-muted rounded-lg p-4 border border-border">
                         <p className="text-foreground/80 leading-relaxed">
-<<<<<<< HEAD
                           &quot;{review.comment}&quot;
-=======
-                          "{review.comment}"
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
                         </p>
                       </div>
                     </div>
@@ -884,11 +710,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
                   {availableProjects.length === 0 && (
                     <p className="text-sm text-muted-foreground mt-1">
                       No completed projects found. You can only review
-<<<<<<< HEAD
                       freelancers you&apos;ve worked with.
-=======
-                      freelancers you've worked with.
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
                     </p>
                   )}
                 </div>
@@ -948,8 +770,4 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   );
 };
 
-<<<<<<< HEAD
 export default FreelancerProfile;
-=======
-export default FreelancerProfile;
->>>>>>> c5612eb2dce8bf48c3df560e018429b5f5aa3ad7
