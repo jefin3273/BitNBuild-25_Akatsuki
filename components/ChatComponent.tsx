@@ -13,6 +13,16 @@ import { MessageComposer } from "./chat/message-composer";
 import { TypingIndicator } from "./chat/typing-indicator";
 import { cn } from "@/lib/utils";
 import { v4 as uuidv4 } from "uuid";
+import { useAuth } from "@/hooks/useAuth";
+
+const AnyComponent = () => {
+  const { user, profile, loading } = useAuth();
+  
+  // user.id - Supabase auth user ID
+  // profile.id - Your database user ID
+  // profile.role - "client" or "freelancer"
+  // profile.name, profile.email, etc.
+};
 
 type Props = {
   projectId: string;
