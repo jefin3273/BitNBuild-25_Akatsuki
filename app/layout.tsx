@@ -5,6 +5,7 @@ import { HeroHeader } from "@/components/Header";
 import FooterSection from "@/components/Footer";
 import ChatComponent from "@/components/chat/ChatComponent";
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -17,8 +18,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "GigCampus",
-  manifest: "/manifest.json",
   description: "Join the Future of Work",
+  manifest: "/manifest.json",
+  icons: "/favicon.ico",
 };
 
 export default function RootLayout({

@@ -20,7 +20,7 @@ const transitionVariants = {
       filter: "blur(0px)",
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         bounce: 0.3,
         duration: 1.5,
       },
@@ -60,7 +60,7 @@ export default function HeroSection() {
                     opacity: 1,
                     y: 0,
                     transition: {
-                      type: "spring",
+                      type: "spring" as const,
                       bounce: 0.3,
                       duration: 2,
                     },
@@ -139,7 +139,23 @@ export default function HeroSection() {
                         },
                       },
                     },
-                    ...transitionVariants,
+                    item: {
+                      hidden: {
+                        opacity: 0,
+                        filter: "blur(12px)",
+                        y: 12,
+                      },
+                      visible: {
+                        opacity: 1,
+                        filter: "blur(0px)",
+                        y: 0,
+                        transition: {
+                          type: "spring" as const,
+                          bounce: 0.3,
+                          duration: 1.5,
+                        },
+                      },
+                    },
                   }}
                   className="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row"
                 >
@@ -182,7 +198,23 @@ export default function HeroSection() {
                     },
                   },
                 },
-                ...transitionVariants,
+                item: {
+                  hidden: {
+                    opacity: 0,
+                    filter: "blur(12px)",
+                    y: 12,
+                  },
+                  visible: {
+                    opacity: 1,
+                    filter: "blur(0px)",
+                    y: 0,
+                    transition: {
+                      type: "spring" as const,
+                      bounce: 0.3,
+                      duration: 1.5,
+                    },
+                  },
+                },
               }}
             >
               <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
@@ -339,21 +371,23 @@ export default function HeroSection() {
               <div className="relative">
                 <blockquote className="border-l-4 pl-4">
                   <p>
-                    Using GigCampus has been like unlocking a secret design
-                    superpower. It's the perfect fusion of simplicity and
-                    versatility, enabling us to create UIs that are as stunning
-                    as they are user-friendly.
+                    Being part of GigCampus feels like unlocking a career
+                    superpower. It&apos;s the perfect blend of opportunity and
+                    growth, helping students land real gigs while businesses
+                    find reliable talent.
                   </p>
 
                   <div className="mt-6 space-y-3">
-                    <cite className="block font-medium">Anonymus User</cite>
-                    {/* <img
+                    <cite className="block font-medium">
+                      Jensen Huang , CEO
+                    </cite>
+                    <img
                       className="h-5 w-fit dark:invert"
                       src="https://html.tailus.io/blocks/customers/nvidia.svg"
                       alt="Nvidia Logo"
                       height="20"
                       width="auto"
-                    /> */}
+                    />
                   </div>
                 </blockquote>
               </div>

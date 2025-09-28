@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Star,
   MapPin,
@@ -71,11 +72,9 @@ interface Review {
   project?: Project;
 }
 
-interface FreelancerProfileProps {
-  userId?: string;
-}
+const FreelancerProfileContent: React.FC = () => {
+  const searchParams = useSearchParams();
 
-const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   const [activeTab, setActiveTab] = useState<"projects" | "reviews">(
     "projects"
   );
@@ -95,8 +94,8 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   const [error, setError] = useState<string | null>(null);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
 
-  // Use a default userId if none provided (for testing)
-  const targetUserId = userId || "10";
+  // Get userId from URL params or use default
+  const targetUserId = searchParams.get("userId") || "2";
 
   console.log("FreelancerProfile mounted with userId:", targetUserId);
 
@@ -107,7 +106,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
         data: { user: authUser },
       } = await supabase.auth.getUser();
       if (authUser) {
-        const { data: userData } = await supabase
+        const { data: userData } = await (supabase as any)
           .from("users")
           .select("*")
           .eq("id", authUser.id)
@@ -134,7 +133,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
     try {
       // For simplicity, fetch all completed projects from this client
       // In a real app, you'd want to check if the freelancer actually worked on these projects
-      const { data: projectsData, error } = await supabase
+      const { data: projectsData, error } = await (supabase as any)
         .from("projects")
         .select("*")
         .eq("client_id", clientId)
@@ -158,7 +157,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
       // Step 1: Fetch user details (simplified first)
       console.log("Step 1: Fetching user...");
-      const { data: userData, error: userError } = await supabase
+      const { data: userData, error: userError } = await (supabase as any)
         .from("users")
         .select("*")
         .eq("id", targetUserId)
@@ -175,7 +174,9 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
       // Step 2: Fetch university if user has university_id
       if (typedUserData?.university_id) {
         console.log("Step 2: Fetching university...");
-        const { data: universityData, error: universityError } = await supabase
+        const { data: universityData, error: universityError } = await (
+          supabase as any
+        )
           .from("universities")
           .select("*")
           .eq("id", typedUserData.university_id)
@@ -191,7 +192,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
       // Step 3: Fetch profile details
       console.log("Step 3: Fetching profile...");
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await (supabase as any)
         .from("profiles")
         .select("*")
         .eq("user_id", targetUserId)
@@ -213,7 +214,9 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
       // Step 4: Fetch projects (simplified)
       console.log("Step 4: Fetching projects...");
-      const { data: projectsData, error: projectsError } = await supabase
+      const { data: projectsData, error: projectsError } = await (
+        supabase as any
+      )
         .from("projects")
         .select("*")
         .eq("client_id", targetUserId);
@@ -227,7 +230,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
       // Step 5: Fetch reviews (simplified)
       console.log("Step 5: Fetching reviews...");
-      const { data: reviewsData, error: reviewsError } = await supabase
+      const { data: reviewsData, error: reviewsError } = await (supabase as any)
         .from("reviews")
         .select("*")
         .eq("reviewed_id", targetUserId);
@@ -265,10 +268,9 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
         comment: newReview.comment,
       };
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("reviews")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .insert(insertData as any); // Use 'as any' to bypass type checking temporarily
+        .insert(insertData);
 
       if (error) throw error;
 
@@ -774,6 +776,25 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
         )}
       </div>
     </div>
+  );
+};
+
+// Loading component for Suspense boundary
+const ProfileLoading: React.FC = () => (
+  <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+    <div className="text-center">
+      <div className="text-xl mb-2">Loading profile...</div>
+      <div className="text-sm text-muted-foreground">Please wait</div>
+    </div>
+  </div>
+);
+
+// Main component wrapped with Suspense
+const FreelancerProfile: React.FC = () => {
+  return (
+    <Suspense fallback={<ProfileLoading />}>
+      <FreelancerProfileContent />
+    </Suspense>
   );
 };
 

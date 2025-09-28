@@ -21,7 +21,7 @@ export default function TestEscrowPage() {
     };
 
     const loadEscrowPayment = async () => {
-        const escrow = await EscrowService.getEscrowByProjectId(testProject.id);
+        const escrow = await EscrowService.getEscrowByProjectId(testProject.id.toString());
         setEscrowPayment(escrow);
     };
 

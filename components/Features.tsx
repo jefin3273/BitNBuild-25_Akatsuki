@@ -86,11 +86,12 @@ export default function FeaturesSection() {
                 </div>
                 <div className="relative z-10 mt-6 space-y-2 text-center">
                   <h2 className="group-hover:text-secondary-950 text-lg font-medium transition dark:text-white">
-                    Secure by default
+                    Secure Escrow Payments
                   </h2>
                   <p className="text-foreground">
-                    Provident fugit and vero voluptate. magnam magni doloribus
-                    dolores voluptates a sapiente nisi.
+                    All client payments are safely held in escrow until project
+                    completion. Funds are released only after approval, ensuring
+                    trust and fairness for both freelancers and clients.
                   </p>
                 </div>
               </CardContent>
