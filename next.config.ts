@@ -8,21 +8,14 @@ const withPWA = createNextPWA({
   disable: process.env.NODE_ENV === "development",
 })
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   reactStrictMode: true,
-
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "ik.imagekit.io",
-      },
-      {
-        protocol: "https",
-        hostname: "lh3.googleusercontent.com",
-      },
+      { protocol: "https", hostname: "ik.imagekit.io" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
-}
+} satisfies import("next").NextConfig
 
 export default withPWA(nextConfig)
