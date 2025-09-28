@@ -57,10 +57,10 @@ async function uploadToCloudinary(
     const type = file.type.startsWith("image/")
       ? "image"
       : file.type.startsWith("video/")
-      ? "video"
-      : file.type.startsWith("audio/")
-      ? "audio"
-      : "file";
+        ? "video"
+        : file.type.startsWith("audio/")
+          ? "audio"
+          : "file";
 
     let attempt = 0;
     const maxAttempts = 3;
@@ -124,7 +124,7 @@ export default function ChatComponent({
 
   const fetcher = async (_key: string): Promise<ChatMessage[]> => {
     const [, , , , before] = _key.split(":");
-    let query = supabase
+    let query = (supabase as any)
       .from("messages")
       .select("*")
       .or(
@@ -153,8 +153,8 @@ export default function ChatComponent({
     () =>
       pages
         ? ([] as ChatMessage[])
-            .concat(...pages)
-            .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
+          .concat(...pages)
+          .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
         : [],
     [pages]
   );
@@ -204,7 +204,7 @@ export default function ChatComponent({
 
     const doUpsert = async () => {
       try {
-        await supabase.from("message_reads").insert({
+        await (supabase as any).from("message_reads").insert({
           project_id: projectId,
           message_id: lastFromOther.id,
           reader_id: userId,
@@ -226,7 +226,7 @@ export default function ChatComponent({
         .at(-1);
       if (!lastOwn) return;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("message_reads")
         .select("message_id, read_at")
         .eq("project_id", projectId)
@@ -284,10 +284,10 @@ export default function ChatComponent({
         media_type: f.type.startsWith("image/")
           ? "image"
           : f.type.startsWith("video/")
-          ? "video"
-          : f.type.startsWith("audio/")
-          ? "audio"
-          : "file",
+            ? "video"
+            : f.type.startsWith("audio/")
+              ? "audio"
+              : "file",
         created_at: now,
         _status: "pending",
       });
@@ -325,7 +325,7 @@ export default function ChatComponent({
       }
 
       if (toInsert.length) {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("messages")
           .insert(toInsert)
           .select("*");
@@ -394,7 +394,7 @@ export default function ChatComponent({
             const isLastOwn =
               isOwn &&
               fullMessages.filter((x) => x.sender_id === userId).at(-1)?.id ===
-                m.id;
+              m.id;
             const seen = isLastOwn && (seenIds.has(m.id) || false);
 
             return (

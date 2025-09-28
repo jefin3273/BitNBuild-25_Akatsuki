@@ -74,7 +74,7 @@ export const useAuth = () => {
         if (!user || !profile) return;
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from("users")
                 .update(updates)
                 .eq("email", user.email!)

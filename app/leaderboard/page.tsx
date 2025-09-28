@@ -31,8 +31,9 @@ export default function LeaderboardPage() {
                 ratings, and total earnings.
               </p>
             </div>
-
-            <FreelancerLeaderboard data={data} />
+            <div className="sm:w-[80%] mx-auto w-[90%]">
+              <FreelancerLeaderboard data={data} />
+            </div>
           </div>
         </main>
       </SidebarInset>
