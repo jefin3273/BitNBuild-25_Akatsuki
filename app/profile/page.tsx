@@ -96,7 +96,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
 
   // Use a default userId if none provided (for testing)
-  const targetUserId = userId || "2";
+  const targetUserId = userId || "10";
 
   console.log("FreelancerProfile mounted with userId:", targetUserId);
 
@@ -198,7 +198,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
         .single();
 
       if (profileError) {
-        console.error("Profile fetch error:", profileError);
+        console.log("Profile fetch error:", profileError);
         // Create default profile if none exists
         setProfile({
           user_id: targetUserId,
@@ -282,9 +282,12 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   };
 
   useEffect(() => {
-    console.log("useEffect triggered with targetUserId:", targetUserId);
-    fetchCurrentUser();
-    fetchFreelancerData();
+    const getInfo = async () => {
+      console.log("useEffect triggered with targetUserId:", targetUserId);
+      await fetchCurrentUser();
+      await fetchFreelancerData(); // assuming this doesn't need await (if it's async, add await)
+    };
+    getInfo();
   }, [targetUserId, fetchCurrentUser, fetchFreelancerData]);
 
   const formatCurrency = (cents: number) => {
@@ -311,10 +314,11 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${i < Math.floor(rating)
-          ? "fill-current text-foreground"
-          : "text-muted-foreground"
-          }`}
+        className={`w-4 h-4 ${
+          i < Math.floor(rating)
+            ? "fill-current text-foreground"
+            : "text-muted-foreground"
+        }`}
       />
     ));
   };
@@ -326,10 +330,11 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-6 h-6 cursor-pointer transition-colors ${i < rating
-          ? "fill-current text-yellow-500"
-          : "text-muted-foreground hover:text-yellow-300"
-          }`}
+        className={`w-6 h-6 cursor-pointer transition-colors ${
+          i < rating
+            ? "fill-current text-yellow-500"
+            : "text-muted-foreground hover:text-yellow-300"
+        }`}
         onClick={() => onChange(i + 1)}
       />
     ));
@@ -530,10 +535,11 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
             <nav className="flex">
               <button
                 onClick={() => setActiveTab("projects")}
-                className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${activeTab === "projects"
-                  ? "text-foreground border-b-2 border-foreground bg-muted/40"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                  }`}
+                className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${
+                  activeTab === "projects"
+                    ? "text-foreground border-b-2 border-foreground bg-muted/40"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                }`}
               >
                 <div className="flex items-center justify-center space-x-2">
                   <Briefcase className="w-5 h-5" />
@@ -542,10 +548,11 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
               </button>
               <button
                 onClick={() => setActiveTab("reviews")}
-                className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${activeTab === "reviews"
-                  ? "text-foreground border-b-2 border-foreground bg-muted/40"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                  }`}
+                className={`flex-1 py-4 px-6 text-center font-semibold transition-colors ${
+                  activeTab === "reviews"
+                    ? "text-foreground border-b-2 border-foreground bg-muted/40"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                }`}
               >
                 <div className="flex items-center justify-center space-x-2">
                   <MessageSquare className="w-5 h-5" />

@@ -45,7 +45,7 @@ export const HeroHeader = () => {
   const menuItems = [
     { name: "Features", href: "/#features" },
     { name: "Leaderboard", href: "/leaderboard" },
-    { name: "Profile", onClick: handleDashboardRedirect }, // run function instead of href
+    { name: "Profile", href: "/profile" }, // run function instead of href
     { name: "About", href: "/about" },
   ];
 
@@ -109,21 +109,12 @@ export const HeroHeader = () => {
               <ul className="flex gap-8 text-sm">
                 {menuItems.map((item, index) => (
                   <li key={index}>
-                    {item.href ? (
-                      <Link
-                        href={item.href}
-                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                      >
-                        <span>{item.name}</span>
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={item.onClick}
-                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                      >
-                        <span>{item.name}</span>
-                      </button>
-                    )}
+                    <Link
+                      href={item.href}
+                      className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                    >
+                      <span>{item.name}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>
