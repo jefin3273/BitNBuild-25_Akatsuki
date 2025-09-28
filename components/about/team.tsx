@@ -1,10 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const team = [
-  { name: "Alex Kim", role: "Co-founder & CEO" },
-  { name: "Jamie Patel", role: "Co-founder & Product" },
-  { name: "Riley Chen", role: "Engineering Lead" },
-  { name: "Taylor Singh", role: "Design Lead" },
+  { name: "Jefin John", role: "Co-founder & CEO" },
+  { name: "Alvin D'souza", role: "Co-founder & Product" },
+  { name: "Jayden Colaco", role: "Engineering Lead" },
+  { name: "Pratipal Dhaulakhandi", role: "Design Lead" },
 ] as const
 
 function initials(name: string) {

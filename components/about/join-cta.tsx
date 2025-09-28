@@ -18,7 +18,7 @@ export function JoinCta() {
           </p>
           <div className="mt-6">
             <Button asChild size="lg">
-              <Link href="/signup" aria-label="Create an account on GigCampus">
+              <Link href="/auth/signup" aria-label="Create an account on GigCampus">
                 Create an Account
               </Link>
             </Button>

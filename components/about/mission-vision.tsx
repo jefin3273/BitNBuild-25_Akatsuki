@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 export function MissionVision() {
   return (
     <section aria-labelledby="mission-vision-heading" className="w-full border-b bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-12 lg:py-16">
+      <div className="mx-auto max-w-7xl px-8 py-12 lg:py-16">
         <div className="mb-8">
           <h2
             id="mission-vision-heading"

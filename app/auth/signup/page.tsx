@@ -175,7 +175,7 @@ export default function SignUpPage() {
               </RadioGroup>
             </div>
 
-            {formData.role === "client" && (
+            {formData.role === "freelancer" && (
               <div className="space-y-2">
                 <Label htmlFor="university_id">University ID (Optional)</Label>
                 <Input
