@@ -72,7 +72,8 @@ interface Review {
   project?: Project;
 }
 
-const FreelancerProfileContent: React.FC = () => {
+const FreelancerProfileContent: React.FC =async({params}:any) => {
+  const{id}=await params;
   const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<"projects" | "reviews">(
