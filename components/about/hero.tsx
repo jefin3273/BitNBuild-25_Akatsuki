@@ -17,7 +17,7 @@ export function Hero() {
         </p>
         <div className="mt-8">
           <Button asChild size="lg">
-            <Link href="/signup" aria-label="Go to Sign Up page">
+            <Link href="/auth/signup" aria-label="Go to Sign Up page">
               Get Started
             </Link>
           </Button>
