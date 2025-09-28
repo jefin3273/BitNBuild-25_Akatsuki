@@ -202,7 +202,7 @@ const FreelancerProfileContent: React.FC = () => {
         console.log("Profile fetch error:", profileError);
         // Create default profile if none exists
         setProfile({
-          user_id: targetUserId,
+          user_id: targetUserId ?? "",
           bio: "No bio available",
           skills: [],
           reputation_score: 0,
