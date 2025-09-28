@@ -1,20 +1,14 @@
 "use client";
 
-import useSWRInfinite from "swr/infinite";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { getOtherUsers, supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { PAGE_SIZE, type ChatMessage, participantsKey } from "./helpers";
-import { MessageBubble } from "./message-bubble";
-import { MessageComposer } from "./message-composer";
-import { TypingIndicator } from "./typing-indicator";
-import { cn } from "@/lib/utils";
-import { v4 as uuidv4 } from "uuid";
 import { MessageCircle, X } from "lucide-react";
-import ChatComponent from "./ChatComponent";
 import { useAuth } from "@/hooks/useAuth";
+import { Card } from "../ui/card";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "../ui/scroll-area";
+import ChatComponent from "./ChatComponent";
 
 type Props = {
   projectId: string;
@@ -34,9 +28,39 @@ export default function ChatHeader({
   const [error, setError] = useState<string | null>(null);
   const [pendingQueue, setPendingQueue] = useState<ChatMessage[]>([]);
   const [openChat, setOpenChat] = useState(false);
+  const [otherUsers, setOtherUsers] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState();
+  const [loading, setLoading] = useState(true);
 
-  const { user } = useAuth();
-  const { otherUsers } = getOtherUsers(user.id);
+  const { user, profile } = useAuth();
+
+  useEffect(() => {
+    const fetchOtherUsers = async () => {
+      if (!profile?.id) return;
+
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .neq("id", profile.id);
+
+        if (error) throw error;
+        console.log(data);
+
+        setOtherUsers(data || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOtherUsers();
+  }, [profile?.id]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div>
@@ -52,11 +76,50 @@ export default function ChatHeader({
           )}
         </div>
       </button>
-      {openChat ? (
-        <ChatComponent userId={userId} projectId="1" receiverId={receiverId} />
+      {!selectedUser && openChat ? (
+        <div
+          className={cn(
+            "fixed md:bottom-20 bottom-28 z-40 right-4 w-[400px] max-w-[90%] bg-white shadow-2xl rounded-2xl dark:bg-gray-900",
+            className
+          )}
+        >
+          <ScrollArea className="min-h-96 flex-col gap-2 px-2">
+            {otherUsers.map((val: any, i: any) => (
+              <Card
+                onClick={() => setSelectedUser(val.id)}
+                className="px-4 py-2"
+                key={val.id || i}
+              >
+                <div>
+                  <div>{val.name}</div>
+                  <div className="text-sm text-gray-400">{val.role}</div>
+                </div>
+              </Card>
+            ))}
+          </ScrollArea>
+        </div>
+      ) : (
+        ""
+      )}
+      {openChat && selectedUser ? (
+        <div
+          className={cn(
+            "fixed md:bottom-20 bottom-28 z-40 right-4 w-[400px] max-w-[90%] bg-white shadow-2xl rounded-2xl dark:bg-gray-900",
+            className
+          )}
+        >
+          <ScrollArea className="min-h-96 flex-1 px-3 space-y-1">
+            <ChatComponent
+              projectId="1"
+              userId={!profile?.id as unknown as string}
+              receiverId={selectedUser as unknown as string}
+            />
+          </ScrollArea>
+        </div>
       ) : (
         ""
       )}
     </div>
   );
 }
+// <ChatComponent userId={userId} projectId="1" receiverId={receiverId} />

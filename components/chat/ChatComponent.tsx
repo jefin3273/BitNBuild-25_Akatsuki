@@ -57,10 +57,10 @@ async function uploadToCloudinary(
     const type = file.type.startsWith("image/")
       ? "image"
       : file.type.startsWith("video/")
-        ? "video"
-        : file.type.startsWith("audio/")
-          ? "audio"
-          : "file";
+      ? "video"
+      : file.type.startsWith("audio/")
+      ? "audio"
+      : "file";
 
     let attempt = 0;
     const maxAttempts = 3;
@@ -154,8 +154,8 @@ export default function ChatComponent({
     () =>
       pages
         ? ([] as ChatMessage[])
-          .concat(...pages)
-          .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
+            .concat(...pages)
+            .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at))
         : [],
     [pages]
   );
@@ -285,10 +285,10 @@ export default function ChatComponent({
         media_type: f.type.startsWith("image/")
           ? "image"
           : f.type.startsWith("video/")
-            ? "video"
-            : f.type.startsWith("audio/")
-              ? "audio"
-              : "file",
+          ? "video"
+          : f.type.startsWith("audio/")
+          ? "audio"
+          : "file",
         created_at: now,
         _status: "pending",
       });
@@ -371,7 +371,7 @@ export default function ChatComponent({
 
   return (
     <div>
-      <button
+      {/* <button
         onClick={() => setOpenChat(!openChat)}
         className="fixed md:bottom-4 bottom-16 right-4 z-40"
       >
@@ -383,14 +383,14 @@ export default function ChatComponent({
           )}
         </div>
       </button>
-      {openChat ? (
-        <div
-          className={cn(
-            "fixed md:bottom-20 bottom-28 z-40 right-4 w-[400px] max-w-[90%] bg-white shadow-2xl rounded-2xl dark:bg-gray-900",
-            className
-          )}
-        >
-          {error && (
+      {openChat ? ( */}
+      <div
+        className={cn(
+          "fixed md:bottom-20 bottom-28 z-40 right-4 w-[400px] max-w-[90%] bg-white shadow-2xl rounded-2xl dark:bg-gray-900",
+          className
+        )}
+      >
+        {/* {error && (
             <Alert variant="destructive" className="rounded-none">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -402,70 +402,69 @@ export default function ChatComponent({
                 Retry failed
               </Button>
             )}
-          </div>
+          </div> */}
 
-          <ScrollArea className="min-h-96 flex-1 px-3">
-            <div
-              ref={scrollRef}
-              className="mx-auto w-full max-w-2xl py-3 flex flex-col gap-2"
-            >
-              {fullMessages.map((m) => {
-                const isOwn = m.sender_id === userId;
-                const isLastOwn =
-                  isOwn &&
-                  fullMessages.filter((x) => x.sender_id === userId).at(-1)
-                    ?.id === m.id;
-                const seen = isLastOwn && (seenIds.has(m.id) || false);
+        <ScrollArea className="min-h-96 flex-1 px-3">
+          <div
+            ref={scrollRef}
+            className="mx-auto w-full max-w-2xl py-3 flex flex-col gap-2"
+          >
+            {fullMessages.map((m) => {
+              const isOwn = m.sender_id === userId;
+              const isLastOwn =
+                isOwn &&
+                fullMessages.filter((x) => x.sender_id === userId).at(-1)
+                  ?.id === m.id;
+              const seen = isLastOwn && (seenIds.has(m.id) || false);
 
-                return (
-                  <div
-                    key={m.id + m._tempId}
-                    onClick={() => {
-                      if (m._status === "failed") {
-                        setPendingQueue((prev) => prev.filter((x) => x !== m));
-                      }
-                    }}
-                  >
-                    <MessageBubble
-                      msg={m}
-                      isOwn={isOwn}
-                      isLastOwnAndSeen={Boolean(seen)}
-                    />
-                  </div>
-                );
-              })}
-              <TypingIndicator
-                projectId={projectId}
-                userId={userId}
-                receiverId={receiverId}
-              />
-              <div className="flex justify-center py-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={
-                    isValidating || (pages && pages.at(-1)?.length === 0)
-                  }
-                  onClick={() => setSize(size + 1)}
+              return (
+                <div
+                  key={m.id + m._tempId}
+                  onClick={() => {
+                    if (m._status === "failed") {
+                      setPendingQueue((prev) => prev.filter((x) => x !== m));
+                    }
+                  }}
                 >
-                  {isValidating ? "Loading…" : "Load older"}
-                </Button>
-              </div>
-            </div>
-          </ScrollArea>
-
-          <div className="px-3 pb-3">
-            <MessageComposer
+                  <MessageBubble
+                    msg={m}
+                    isOwn={isOwn}
+                    isLastOwnAndSeen={Boolean(seen)}
+                  />
+                </div>
+              );
+            })}
+            <TypingIndicator
               projectId={projectId}
               userId={userId}
               receiverId={receiverId}
-              onSend={(c, f) => void sendMessage(c, f)}
             />
+            <div className="flex justify-center py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isValidating || (pages && pages.at(-1)?.length === 0)}
+                onClick={() => setSize(size + 1)}
+              >
+                {isValidating ? "Loading…" : "Load older"}
+              </Button>
+            </div>
           </div>
+        </ScrollArea>
+
+        <div className="px-3 pb-3">
+          <MessageComposer
+            projectId={projectId}
+            userId={userId}
+            receiverId={receiverId}
+            onSend={(c, f) => void sendMessage(c, f)}
+          />
         </div>
+      </div>
+      {/* </div>
       ) : (
         ""
-      )}
+      )} */}
     </div>
   );
 }
