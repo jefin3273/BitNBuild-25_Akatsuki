@@ -35,7 +35,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "app/profile/[id]"  ],
   "exclude": [
     "node_modules"
   ]
