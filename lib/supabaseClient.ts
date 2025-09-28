@@ -22,12 +22,23 @@ export const getUserProfile = async (email: string) => {
 };
 
 // Helper function to create user profile
-export const createUserProfile = async (profile: Database["public"]["Tables"]["users"]["Insert"]) => {
-    const { data, error } = await (supabase as any)
-        .from("users")
-        .insert(profile)
-        .select()
-        .single();
+export const createUserProfile = async (
+  profile: Database["public"]["Tables"]["users"]["Insert"]
+) => {
+  const { data, error } = await (supabase as any)
+    .from("users")
+    .insert(profile)
+    .select()
+    .single();
+
+  return { data, error };
+};
+
+export const getOtherUsers = async (currentUserId: string) => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .neq("id", currentUserId); // exclude current user
 
   return { data, error };
 };
@@ -37,12 +48,12 @@ export const updateUserProfile = async (
   email: string,
   updates: Database["public"]["Tables"]["users"]["Update"]
 ) => {
-    const { data, error } = await (supabase as any)
-        .from("users")
-        .update(updates)
-        .eq("email", email)
-        .select()
-        .single();
+  const { data, error } = await (supabase as any)
+    .from("users")
+    .update(updates)
+    .eq("email", email)
+    .select()
+    .single();
 
   return { data, error };
 };
