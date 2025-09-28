@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Aarav Mehta",
+    "avatar": "/boyavatar.png",
+    "completedGigs": 25,
+    "avgRating": 4.9,
+    "earnings": 15000
+  },
+  {
+    "name": "Sara Khan",
+    "avatar": "/girlavatar.png",
+    "completedGigs": 20,
+    "avgRating": 4.7,
+    "earnings": 12000
+  },
+  {
+    "name": "Rohit Sharma",
+    "avatar": "/boyavatar.png",
+    "completedGigs": 18,
+    "avgRating": 4.5,
+    "earnings": 10000
+  },
+  {
+    "name": "Priya Patel",
+    "avatar": "/girlavatar.png",
+    "completedGigs": 15,
+    "avgRating": 4.2,
+    "earnings": 8000
+  },
+  {
+    "name": "Aditya Verma",
+    "avatar": "/boyavatar.png",
+    "completedGigs": 12,
+    "avgRating": 4.8,
+    "earnings": 7500
+  },
+  {
+    "name": "Neha Gupta",
+    "avatar": "/girlavatar.png",
+    "completedGigs": 10,
+    "avgRating": 4.4,
+    "earnings": 6000
+  }
+]
