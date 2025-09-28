@@ -1,13 +1,13 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import { 
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import {
   Plus,
-  Briefcase, 
-  MessageSquare, 
-  Clock, 
+  Briefcase,
+  MessageSquare,
+  Clock,
   DollarSign,
   User,
   Star,
@@ -24,15 +24,19 @@ import {
   Award,
   Building,
   Target,
-  Zap
-} from 'lucide-react';
+  Zap,
+} from "lucide-react";
 
 const ClientDashboard = () => {
-  const { user: authUser, profile: userProfile, loading: authLoading } = useAuth();
+  const {
+    user: authUser,
+    profile: userProfile,
+    loading: authLoading,
+  } = useAuth();
   const router = useRouter();
-  
+
   // State management
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [myProjects, setMyProjects] = useState([]);
   const [activeBids, setActiveBids] = useState([]);
   const [completedProjects, setCompletedProjects] = useState([]);
@@ -41,64 +45,73 @@ const ClientDashboard = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [showBidsModal, setShowBidsModal] = useState(false);
   const [projectBids, setProjectBids] = useState([]);
-  const [filterStatus, setFilterStatus] = useState('all');
-  
+  const [filterStatus, setFilterStatus] = useState("all");
+
   const currentUserId = userProfile?.id;
 
   // Fetch all dashboard data
   const fetchDashboardData = async () => {
     if (!currentUserId) return;
-    
+
     try {
       setLoading(true);
 
-      // Fetch client's projects 
+      // Fetch client's projects
       const { data: projects, error: projectsError } = await supabase
-        .from('projects')
-        .select(`
+        .from("projects")
+        .select(
+          `
           *
-        `)
-        .eq('client_id', currentUserId)
-        .order('created_at', { ascending: false });
+        `
+        )
+        .eq("client_id", currentUserId)
+        .order("created_at", { ascending: false });
 
       if (projectsError) {
-        console.error('Projects fetch error:', projectsError);
+        console.error("Projects fetch error:", projectsError);
         setMyProjects([]);
       } else {
         setMyProjects(projects || []);
       }
 
       // Fetch active bids for client's projects
-      const projectIds = projects?.map(p => p.id) || [];
+      const projectIds = projects?.map((p) => p.id) || [];
       if (projectIds.length > 0) {
         const { data: bids, error: bidsError } = await supabase
-          .from('bids')
-          .select(`
+          .from("bids")
+          .select(
+            `
             *,
             projects(title, budget_min, budget_max),
             users:users!bids_freelancer_id_fkey(name, email),
             profiles:profiles!bids_freelancer_id_fkey(reputation_score, skills, hourly_rate)
-          `)
-          .in('project_id', projectIds)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false });
+          `
+          )
+          .in("project_id", projectIds)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
 
         if (!bidsError) {
           setActiveBids(bids || []);
         }
 
         // Fetch recent messages for active projects
-        const activeProjectIds = projects?.filter(p => p.status === 'in_progress').map(p => p.id) || [];
+        const activeProjectIds =
+          projects
+            ?.filter((p) => p.status === "in_progress")
+            .map((p) => p.id) || [];
         if (activeProjectIds.length > 0) {
           const { data: messagesData, error: messagesError } = await supabase
-            .from('messages')
-            .select(`
+            .from("messages")
+            .select(
+              `
               *,
               projects(title),
               users:users!messages_sender_id_fkey(name)
-            `)
-            .in('project_id', activeProjectIds)
-            .order('timestamp', { ascending: false })
+            `
+            )
+            .in("project_id", activeProjectIds)
+            .order("timestamp", { ascending: false })
             .limit(10);
 
           if (!messagesError) {
@@ -106,9 +119,8 @@ const ClientDashboard = () => {
           }
         }
       }
-
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
@@ -118,23 +130,25 @@ const ClientDashboard = () => {
   const fetchProjectBids = async (projectId) => {
     try {
       const { data: bids, error } = await supabase
-        .from('bids')
-        .select(`
+        .from("bids")
+        .select(
+          `
           *,
           users:users!bids_freelancer_id_fkey(name, email),
           profiles:profiles!bids_freelancer_id_fkey(reputation_score, skills, hourly_rate, bio)
-        `)
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false });
+        `
+        )
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: false });
 
       if (!error && bids) {
         setProjectBids(bids);
       } else {
-        console.error('Error fetching project bids:', error);
+        console.error("Error fetching project bids:", error);
         setProjectBids([]);
       }
     } catch (error) {
-      console.error('Error fetching project bids:', error);
+      console.error("Error fetching project bids:", error);
       setProjectBids([]);
     }
   };
@@ -145,37 +159,37 @@ const ClientDashboard = () => {
       // Start a transaction-like operation
       // 1. Update the accepted bid status
       const { error: bidError } = await supabase
-        .from('bids')
-        .update({ status: 'accepted' })
-        .eq('id', bidId);
+        .from("bids")
+        .update({ status: "accepted" })
+        .eq("id", bidId);
 
       if (bidError) throw bidError;
 
       // 2. Reject all other bids for this project
       const { error: rejectError } = await supabase
-        .from('bids')
-        .update({ status: 'rejected' })
-        .eq('project_id', projectId)
-        .neq('id', bidId);
+        .from("bids")
+        .update({ status: "rejected" })
+        .eq("project_id", projectId)
+        .neq("id", bidId);
 
       if (rejectError) throw rejectError;
 
       // 3. Update project status to in_progress
       const { error: projectError } = await supabase
-        .from('projects')
-        .update({ status: 'in_progress' })
-        .eq('id', projectId);
+        .from("projects")
+        .update({ status: "in_progress" })
+        .eq("id", projectId);
 
       if (projectError) throw projectError;
 
       // Refresh data
       await fetchDashboardData();
       await fetchProjectBids(projectId);
-      
-      alert('Bid accepted successfully! Project is now in progress.');
+
+      alert("Bid accepted successfully! Project is now in progress.");
     } catch (error) {
-      console.error('Error accepting bid:', error);
-      alert('Failed to accept bid. Please try again.');
+      console.error("Error accepting bid:", error);
+      alert("Failed to accept bid. Please try again.");
     }
   };
 
@@ -183,17 +197,17 @@ const ClientDashboard = () => {
   const handleRejectBid = async (bidId, projectId) => {
     try {
       const { error } = await supabase
-        .from('bids')
-        .update({ status: 'rejected' })
-        .eq('id', bidId);
+        .from("bids")
+        .update({ status: "rejected" })
+        .eq("id", bidId);
 
       if (error) throw error;
 
       await fetchProjectBids(projectId);
-      alert('Bid rejected successfully.');
+      alert("Bid rejected successfully.");
     } catch (error) {
-      console.error('Error rejecting bid:', error);
-      alert('Failed to reject bid. Please try again.');
+      console.error("Error rejecting bid:", error);
+      alert("Failed to reject bid. Please try again.");
     }
   };
 
@@ -201,17 +215,17 @@ const ClientDashboard = () => {
   const handleCompleteProject = async (projectId) => {
     try {
       const { error } = await supabase
-        .from('projects')
-        .update({ status: 'completed' })
-        .eq('id', projectId);
+        .from("projects")
+        .update({ status: "completed" })
+        .eq("id", projectId);
 
       if (error) throw error;
 
       await fetchDashboardData();
-      alert('Project marked as completed!');
+      alert("Project marked as completed!");
     } catch (error) {
-      console.error('Error completing project:', error);
-      alert('Failed to complete project. Please try again.');
+      console.error("Error completing project:", error);
+      alert("Failed to complete project. Please try again.");
     }
   };
 
@@ -221,43 +235,43 @@ const ClientDashboard = () => {
   };
 
   useEffect(() => {
-    if (!authLoading && currentUserId && userProfile?.role === 'client') {
+    if (!authLoading && currentUserId && userProfile?.role === "client") {
       fetchDashboardData();
     }
   }, [authLoading, currentUserId, userProfile]);
 
   const formatCurrency = (cents) => {
-    if (!cents || isNaN(cents)) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    if (!cents || isNaN(cents)) return "$0.00";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(cents / 100);
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
       });
     } catch (error) {
-      return 'Invalid Date';
+      return "Invalid Date";
     }
   };
 
   const getStatusColor = (status) => {
     const colors = {
-      open: 'bg-blue-100 text-blue-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      completed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-      pending: 'bg-purple-100 text-purple-800',
-      accepted: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
+      open: "bg-blue-100 text-blue-800",
+      in_progress: "bg-yellow-100 text-yellow-800",
+      completed: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800",
+      pending: "bg-purple-100 text-purple-800",
+      accepted: "bg-green-100 text-green-800",
+      rejected: "bg-red-100 text-red-800",
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || "bg-gray-100 text-gray-800";
   };
 
   const renderStars = (rating) => {
@@ -266,15 +280,15 @@ const ClientDashboard = () => {
         key={i}
         className={`w-4 h-4 ${
           i < Math.floor(rating)
-            ? 'fill-current text-yellow-500'
-            : 'text-gray-300'
+            ? "fill-current text-yellow-500"
+            : "text-gray-300"
         }`}
       />
     ));
   };
 
-  const filteredProjects = myProjects.filter(project => {
-    return filterStatus === 'all' || project.status === filterStatus;
+  const filteredProjects = myProjects.filter((project) => {
+    return filterStatus === "all" || project.status === filterStatus;
   });
 
   if (authLoading || !userProfile) {
@@ -288,12 +302,16 @@ const ClientDashboard = () => {
     );
   }
 
-  if (userProfile?.role !== 'client') {
+  if (userProfile?.role !== "client") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600">This dashboard is only available for clients.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Access Denied
+          </h2>
+          <p className="text-gray-600">
+            This dashboard is only available for clients.
+          </p>
         </div>
       </div>
     );
@@ -325,7 +343,8 @@ const ClientDashboard = () => {
                   Welcome back, {userProfile?.name}
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Client Dashboard • {userProfile?.is_verified_student && (
+                  Client Dashboard •{" "}
+                  {userProfile?.is_verified_student && (
                     <span className="inline-flex items-center">
                       <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
                       Verified Student
@@ -335,7 +354,7 @@ const ClientDashboard = () => {
               </div>
             </div>
             <button
-              onClick={() => router.push('/project/project-add')}
+              onClick={() => router.push("/add-project")}
               className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
             >
               <Plus className="w-5 h-5 mr-2" />
@@ -350,10 +369,10 @@ const ClientDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             {[
-              { id: 'overview', label: 'Overview', icon: TrendingUp },
-              { id: 'projects', label: 'My Projects', icon: Briefcase },
-              { id: 'bids', label: 'Active Bids', icon: Target },
-              { id: 'messages', label: 'Messages', icon: MessageSquare },
+              { id: "overview", label: "Overview", icon: TrendingUp },
+              { id: "projects", label: "My Projects", icon: Briefcase },
+              { id: "bids", label: "Active Bids", icon: Target },
+              { id: "messages", label: "Messages", icon: MessageSquare },
             ].map((tab) => {
               const IconComponent = tab.icon;
               return (
@@ -362,8 +381,8 @@ const ClientDashboard = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
                   <IconComponent className="w-4 h-4" />
@@ -377,7 +396,7 @@ const ClientDashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'overview' && (
+        {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -387,8 +406,12 @@ const ClientDashboard = () => {
                     <Briefcase className="h-8 w-8 text-blue-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Total Projects</p>
-                    <p className="text-2xl font-semibold text-gray-900">{myProjects.length}</p>
+                    <p className="text-sm font-medium text-gray-500">
+                      Total Projects
+                    </p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {myProjects.length}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -399,9 +422,14 @@ const ClientDashboard = () => {
                     <Clock className="h-8 w-8 text-yellow-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Active Projects</p>
+                    <p className="text-sm font-medium text-gray-500">
+                      Active Projects
+                    </p>
                     <p className="text-2xl font-semibold text-gray-900">
-                      {myProjects.filter(p => p.status === 'in_progress').length}
+                      {
+                        myProjects.filter((p) => p.status === "in_progress")
+                          .length
+                      }
                     </p>
                   </div>
                 </div>
@@ -413,8 +441,12 @@ const ClientDashboard = () => {
                     <Target className="h-8 w-8 text-green-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Pending Bids</p>
-                    <p className="text-2xl font-semibold text-gray-900">{activeBids.length}</p>
+                    <p className="text-sm font-medium text-gray-500">
+                      Pending Bids
+                    </p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {activeBids.length}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -425,9 +457,14 @@ const ClientDashboard = () => {
                     <CheckCircle className="h-8 w-8 text-purple-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Completed</p>
+                    <p className="text-sm font-medium text-gray-500">
+                      Completed
+                    </p>
                     <p className="text-2xl font-semibold text-gray-900">
-                      {myProjects.filter(p => p.status === 'completed').length}
+                      {
+                        myProjects.filter((p) => p.status === "completed")
+                          .length
+                      }
                     </p>
                   </div>
                 </div>
@@ -438,16 +475,29 @@ const ClientDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Recent Projects */}
               <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Projects</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Recent Projects
+                </h3>
                 <div className="space-y-3">
                   {myProjects.slice(0, 3).map((project) => (
-                    <div key={project.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={project.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div>
-                        <p className="font-medium text-gray-900">{project.title}</p>
-                        <p className="text-sm text-gray-600">{formatDate(project.created_at)}</p>
+                        <p className="font-medium text-gray-900">
+                          {project.title}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {formatDate(project.created_at)}
+                        </p>
                       </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                        {project.status.replace('_', ' ')}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          project.status
+                        )}`}
+                      >
+                        {project.status.replace("_", " ")}
                       </span>
                     </div>
                   ))}
@@ -456,16 +506,27 @@ const ClientDashboard = () => {
 
               {/* Recent Bids */}
               <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Bids</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Recent Bids
+                </h3>
                 <div className="space-y-3">
                   {activeBids.slice(0, 3).map((bid) => (
-                    <div key={bid.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={bid.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div>
-                        <p className="font-medium text-gray-900">{bid.users?.name}</p>
-                        <p className="text-sm text-gray-600">{bid.projects?.title}</p>
+                        <p className="font-medium text-gray-900">
+                          {bid.users?.name}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {bid.projects?.title}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-green-600">{formatCurrency(bid.proposed_price)}</p>
+                        <p className="font-semibold text-green-600">
+                          {formatCurrency(bid.proposed_price)}
+                        </p>
                         <p className="text-xs text-gray-500">
                           {new Date(bid.created_at).toLocaleDateString()}
                         </p>
@@ -478,12 +539,14 @@ const ClientDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'projects' && (
+        {activeTab === "projects" && (
           <div className="space-y-6">
             {/* Filters */}
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">My Projects</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  My Projects
+                </h2>
                 <div className="flex items-center gap-4">
                   <select
                     className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -497,7 +560,7 @@ const ClientDashboard = () => {
                     <option value="cancelled">Cancelled</option>
                   </select>
                   <button
-                    onClick={() => router.push('/project/project-add')}
+                    onClick={() => router.push("/project/project-add")}
                     className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -510,23 +573,35 @@ const ClientDashboard = () => {
             {/* Projects List */}
             <div className="space-y-4">
               {filteredProjects.map((project) => (
-                <div key={project.id} className="bg-white rounded-lg shadow p-6">
+                <div
+                  key={project.id}
+                  className="bg-white rounded-lg shadow p-6"
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{project.title}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                          {project.status.replace('_', ' ')}
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {project.title}
+                        </h3>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            project.status
+                          )}`}
+                        >
+                          {project.status.replace("_", " ")}
                         </span>
                         <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
                           {project.category}
                         </span>
                       </div>
-                      <p className="text-gray-600 mb-3">{project.description}</p>
-                                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <p className="text-gray-600 mb-3">
+                        {project.description}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <DollarSign className="w-4 h-4" />
-                          {formatCurrency(project.budget_min)} - {formatCurrency(project.budget_max)}
+                          {formatCurrency(project.budget_min)} -{" "}
+                          {formatCurrency(project.budget_max)}
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
@@ -534,12 +609,17 @@ const ClientDashboard = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <Users className="w-4 h-4" />
-                          {activeBids.filter(b => b.project_id === project.id).length} bids
+                          {
+                            activeBids.filter(
+                              (b) => b.project_id === project.id
+                            ).length
+                          }{" "}
+                          bids
                         </div>
                       </div>
                     </div>
                     <div className="ml-4 flex gap-2">
-                      {project.status === 'open' && (
+                      {project.status === "open" && (
                         <button
                           onClick={() => {
                             setSelectedProject(project);
@@ -548,10 +628,16 @@ const ClientDashboard = () => {
                           }}
                           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
-                          View Bids ({activeBids.filter(b => b.project_id === project.id).length})
+                          View Bids (
+                          {
+                            activeBids.filter(
+                              (b) => b.project_id === project.id
+                            ).length
+                          }
+                          )
                         </button>
                       )}
-                      {project.status === 'in_progress' && (
+                      {project.status === "in_progress" && (
                         <>
                           <button
                             onClick={() => handleStartChat(project.id)}
@@ -575,7 +661,7 @@ const ClientDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'bids' && (
+        {activeTab === "bids" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-gray-900">Active Bids</h2>
             {activeBids.map((bid) => (
@@ -583,8 +669,14 @@ const ClientDashboard = () => {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{bid.projects?.title}</h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(bid.status)}`}>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {bid.projects?.title}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          bid.status
+                        )}`}
+                      >
                         {bid.status}
                       </span>
                     </div>
@@ -601,13 +693,18 @@ const ClientDashboard = () => {
                       </div>
                       <div className="flex items-center">
                         <DollarSign className="w-4 h-4 mr-1 text-gray-500" />
-                        <span className="font-semibold text-green-600">{formatCurrency(bid.proposed_price)}</span>
+                        <span className="font-semibold text-green-600">
+                          {formatCurrency(bid.proposed_price)}
+                        </span>
                       </div>
                     </div>
                     <p className="text-gray-600 mb-3">{bid.proposal_text}</p>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {bid.profiles?.skills?.map((skill, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                        >
                           {skill}
                         </span>
                       ))}
@@ -649,15 +746,19 @@ const ClientDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'messages' && (
+        {activeTab === "messages" && (
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900">Recent Messages</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Recent Messages
+            </h2>
             {messages.map((message) => (
               <div key={message.id} className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{message.projects?.title}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {message.projects?.title}
+                      </h3>
                     </div>
                     <div className="flex items-center gap-2 mb-2">
                       <User className="w-4 h-4 text-gray-500" />
@@ -692,9 +793,12 @@ const ClientDashboard = () => {
             <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
               <div className="flex items-center justify-between p-6 border-b">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">{selectedProject.title}</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {selectedProject.title}
+                  </h3>
                   <p className="text-sm text-gray-600">
-                    {projectBids.length} bid{projectBids.length !== 1 ? 's' : ''} received
+                    {projectBids.length} bid
+                    {projectBids.length !== 1 ? "s" : ""} received
                   </p>
                 </div>
                 <button
@@ -708,7 +812,10 @@ const ClientDashboard = () => {
               <div className="overflow-y-auto max-h-[70vh] p-6">
                 <div className="space-y-4">
                   {projectBids.map((bid) => (
-                    <div key={bid.id} className="border border-gray-200 rounded-lg p-6">
+                    <div
+                      key={bid.id}
+                      className="border border-gray-200 rounded-lg p-6"
+                    >
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
@@ -716,42 +823,61 @@ const ClientDashboard = () => {
                               <User className="w-5 h-5 text-gray-600" />
                             </div>
                             <div>
-                              <h4 className="font-semibold text-gray-900">{bid.users?.name}</h4>
-                              <p className="text-sm text-gray-600">{bid.users?.email}</p>
+                              <h4 className="font-semibold text-gray-900">
+                                {bid.users?.name}
+                              </h4>
+                              <p className="text-sm text-gray-600">
+                                {bid.users?.email}
+                              </p>
                             </div>
                             <div className="flex items-center">
                               {renderStars(bid.profiles?.reputation_score || 0)}
                               <span className="ml-2 text-sm font-medium">
-                                {(bid.profiles?.reputation_score || 0).toFixed(1)}
+                                {(bid.profiles?.reputation_score || 0).toFixed(
+                                  1
+                                )}
                               </span>
                             </div>
                           </div>
-                          
+
                           <div className="grid grid-cols-2 gap-4 mb-3">
                             <div>
-                              <span className="text-sm text-gray-500">Proposed Price:</span>
+                              <span className="text-sm text-gray-500">
+                                Proposed Price:
+                              </span>
                               <p className="text-lg font-semibold text-green-600">
                                 {formatCurrency(bid.proposed_price)}
                               </p>
                             </div>
                             <div>
-                              <span className="text-sm text-gray-500">Hourly Rate:</span>
+                              <span className="text-sm text-gray-500">
+                                Hourly Rate:
+                              </span>
                               <p className="text-lg font-semibold">
-                                ${bid.profiles?.hourly_rate || 'N/A'}/hr
+                                ${bid.profiles?.hourly_rate || "N/A"}/hr
                               </p>
                             </div>
                           </div>
 
                           <div className="mb-3">
-                            <span className="text-sm text-gray-500">Proposed Deadline:</span>
-                            <p className="font-medium">{formatDate(bid.proposed_deadline)}</p>
+                            <span className="text-sm text-gray-500">
+                              Proposed Deadline:
+                            </span>
+                            <p className="font-medium">
+                              {formatDate(bid.proposed_deadline)}
+                            </p>
                           </div>
 
                           <div className="mb-3">
-                            <span className="text-sm text-gray-500">Skills:</span>
+                            <span className="text-sm text-gray-500">
+                              Skills:
+                            </span>
                             <div className="flex flex-wrap gap-2 mt-1">
                               {bid.profiles?.skills?.map((skill, index) => (
-                                <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                                >
                                   {skill}
                                 </span>
                               ))}
@@ -760,21 +886,28 @@ const ClientDashboard = () => {
 
                           <div className="mb-4">
                             <span className="text-sm text-gray-500">Bio:</span>
-                            <p className="text-gray-700 mt-1">{bid.profiles?.bio || 'No bio provided'}</p>
+                            <p className="text-gray-700 mt-1">
+                              {bid.profiles?.bio || "No bio provided"}
+                            </p>
                           </div>
 
                           <div className="mb-4">
-                            <span className="text-sm text-gray-500">Proposal:</span>
-                            <p className="text-gray-700 mt-1">{bid.proposal_text}</p>
+                            <span className="text-sm text-gray-500">
+                              Proposal:
+                            </span>
+                            <p className="text-gray-700 mt-1">
+                              {bid.proposal_text}
+                            </p>
                           </div>
 
                           <div className="text-xs text-gray-500">
-                            Submitted on {new Date(bid.created_at).toLocaleString()}
+                            Submitted on{" "}
+                            {new Date(bid.created_at).toLocaleString()}
                           </div>
                         </div>
                       </div>
 
-                      {bid.status === 'pending' && (
+                      {bid.status === "pending" && (
                         <div className="flex gap-3 mt-4 pt-4 border-t">
                           <button
                             onClick={() => {
@@ -786,7 +919,9 @@ const ClientDashboard = () => {
                             Accept Bid
                           </button>
                           <button
-                            onClick={() => handleRejectBid(bid.id, bid.project_id)}
+                            onClick={() =>
+                              handleRejectBid(bid.id, bid.project_id)
+                            }
                             className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                           >
                             Reject Bid
@@ -794,10 +929,15 @@ const ClientDashboard = () => {
                         </div>
                       )}
 
-                      {bid.status !== 'pending' && (
+                      {bid.status !== "pending" && (
                         <div className="mt-4 pt-4 border-t">
-                          <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bid.status)}`}>
-                            {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
+                          <span
+                            className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                              bid.status
+                            )}`}
+                          >
+                            {bid.status.charAt(0).toUpperCase() +
+                              bid.status.slice(1)}
                           </span>
                         </div>
                       )}
