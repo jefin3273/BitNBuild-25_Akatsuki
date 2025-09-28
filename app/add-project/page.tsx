@@ -26,6 +26,16 @@ interface ProjectFormData {
   deadline: string
 }
 
+// Define error type with proper string values for validation errors
+interface ProjectFormErrors {
+  title?: string
+  description?: string
+  category?: string
+  budget_min?: string
+  budget_max?: string
+  deadline?: string
+}
+
 const AddProject: React.FC = () => {
   const { user: currentAuthUser, profile: currentUserProfile, loading: authLoading } = useAuth()
   
@@ -42,7 +52,7 @@ const AddProject: React.FC = () => {
     deadline: ''
   })
 
-  const [errors, setErrors] = useState<Partial<ProjectFormData>>({})
+  const [errors, setErrors] = useState<ProjectFormErrors>({})
 
   // Category options
   const categories = [
@@ -51,7 +61,7 @@ const AddProject: React.FC = () => {
     { value: 'writing', label: 'Writing & Content', description: 'Copywriting, articles, documentation' },
     { value: 'tutoring', label: 'Tutoring & Teaching', description: 'Academic help, skill training' },
     { value: 'other', label: 'Other', description: 'Any other services' }
-  ]
+  ] as const
 
   // Handle input changes
   const handleInputChange = (field: keyof ProjectFormData, value: string | number) => {
@@ -71,7 +81,7 @@ const AddProject: React.FC = () => {
 
   // Validate form
   const validateForm = (): boolean => {
-    const newErrors: Partial<ProjectFormData> = {}
+    const newErrors: ProjectFormErrors = {}
 
     if (!formData.title.trim()) {
       newErrors.title = 'Project title is required'
@@ -131,11 +141,11 @@ const AddProject: React.FC = () => {
       // Create deadline timestamp in the correct format
       const deadlineTimestamp = new Date(formData.deadline + 'T23:59:59').toISOString()
 
-      // Replace the existing insert block (around line 133-147) with this:
-      const { data, error: insertError } = await supabase
+      // Use type assertion for Supabase operation
+      const { data, error: insertError } = await (supabase as any)
         .from('projects')
         .insert({
-          client_id: parseInt(currentUserProfile.id), // Use current user's ID as integer
+          client_id: currentUserProfile.id, // Use current user's ID as number
           title: formData.title.trim(),
           description: formData.description.trim(),
           category: formData.category,
@@ -143,7 +153,7 @@ const AddProject: React.FC = () => {
           budget_max: formData.budget_max * 100,
           deadline: deadlineTimestamp,
           status: 'open'
-        } as any)  // Add type assertion here
+        })
         .select()
 
       if (insertError) {
@@ -167,9 +177,16 @@ const AddProject: React.FC = () => {
         setSuccess(false)
       }, 3000)
 
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error creating project:', err)
-      setError(err.message || 'Failed to create project. Please try again.')
+      // Proper error handling with type checking
+      if (err instanceof Error) {
+        setError(err.message)
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        setError((err as { message: string }).message)
+      } else {
+        setError('Failed to create project. Please try again.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -419,7 +436,6 @@ const AddProject: React.FC = () => {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-blue-800 text-sm">
                   <strong>Budget Range:</strong> ₹{formData.budget_min.toLocaleString()} - ₹{formData.budget_max.toLocaleString()}
-                  
                 </p>
               </div>
             )}
