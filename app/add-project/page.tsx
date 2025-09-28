@@ -135,7 +135,7 @@ const AddProject: React.FC = () => {
       const { data, error: insertError } = await supabase
         .from('projects')
         .insert({
-          client_id: currentUserProfile.id,
+          client_id: parseInt(currentUserProfile.id), // Use current user's ID as integer
           title: formData.title.trim(),
           description: formData.description.trim(),
           category: formData.category,
