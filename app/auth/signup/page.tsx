@@ -150,6 +150,8 @@ export default function SignUpPage() {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
+                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                title="Please enter a valid email address"
               />
             </div>
 
@@ -177,14 +179,18 @@ export default function SignUpPage() {
 
             {formData.role === "freelancer" && (
               <div className="space-y-2">
-                <Label htmlFor="university_id">University ID (Optional)</Label>
+                <Label htmlFor="university_id">
+                  University Email (Optional)
+                </Label>
                 <Input
                   id="university_id"
                   name="university_id"
-                  type="number"
+                  type="email"
                   placeholder="Enter your university ID"
                   value={formData.university_id || ""}
                   onChange={handleInputChange}
+                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                  title="Please enter a valid university email address"
                 />
               </div>
             )}
