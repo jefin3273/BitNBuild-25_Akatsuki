@@ -37,13 +37,13 @@ export async function POST(req: Request) {
     ].join("\n");
 
     const { text } = await generateText({
-      model: groq("llama-3.3-70b-versatile"), // ✅ Valid Groq model
+      model: groq("llama-3.3-70b-versatile"),
       system: systemPrompt,
       prompt: userPrompt,
-      maxTokens: 1200,
+      maxOutputTokens: 1200,
       temperature: 0.2,
-      apiKey: process.env.GROQ_API_KEY, // uses your env key
     });
+
 
     return NextResponse.json({ text });
   } catch (err: any) {
