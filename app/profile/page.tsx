@@ -1,6 +1,7 @@
 "use client";
 import type React from "react";
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Star,
   MapPin,
@@ -71,11 +72,9 @@ interface Review {
   project?: Project;
 }
 
-interface FreelancerProfileProps {
-  userId?: string;
-}
+const FreelancerProfile: React.FC = () => {
+  const searchParams = useSearchParams();
 
-const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   const [activeTab, setActiveTab] = useState<"projects" | "reviews">(
     "projects"
   );
@@ -95,8 +94,8 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
   const [error, setError] = useState<string | null>(null);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
 
-  // Use a default userId if none provided (for testing)
-  const targetUserId = userId || "2";
+  // Get userId from URL params or use default
+  const targetUserId = searchParams.get('userId') || "2";
 
   console.log("FreelancerProfile mounted with userId:", targetUserId);
 
@@ -267,7 +266,6 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ userId }) => {
 
       const { error } = await supabase
         .from("reviews")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .insert(insertData as any); // Use 'as any' to bypass type checking temporarily
 
       if (error) throw error;

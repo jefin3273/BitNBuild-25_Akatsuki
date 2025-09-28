@@ -130,18 +130,19 @@ const AddProject: React.FC = () => {
       // Create deadline timestamp in the correct format
       const deadlineTimestamp = new Date(formData.deadline + 'T23:59:59').toISOString()
 
+      // Replace the existing insert block (around line 133-147) with this:
       const { data, error: insertError } = await supabase
         .from('projects')
         .insert({
-          client_id: currentUserProfile.id, // Use current user's ID as number
+          client_id: currentUserProfile.id,
           title: formData.title.trim(),
           description: formData.description.trim(),
           category: formData.category,
-          budget_min: formData.budget_min * 100, // Convert to cents
-          budget_max: formData.budget_max * 100, // Convert to cents
+          budget_min: formData.budget_min * 100,
+          budget_max: formData.budget_max * 100,
           deadline: deadlineTimestamp,
           status: 'open'
-        })
+        } as any)  // Add type assertion here
         .select()
 
       if (insertError) {
@@ -247,7 +248,7 @@ const AddProject: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           {/* User Info */}
-          <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border">
+          <div className="mb-6 p-4 bg-muted/30 rounded-lg border border-border mt-20">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">

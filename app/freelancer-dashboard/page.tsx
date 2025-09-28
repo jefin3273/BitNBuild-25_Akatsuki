@@ -36,13 +36,13 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const FreelancerDashboard = () => {
   // State management
   const [activeTab, setActiveTab] = useState("overview");
-  const [userData, setUserData] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [availableProjects, setAvailableProjects] = useState<any | null>([]);
-  const [myBids, setMyBids] = useState<any | null>([]);
-  const [activeProjects, setActiveProjects] = useState<any | null>([]);
-  const [completedProjects, setCompletedProjects] = useState<any | null>([]);
-  const [payments, setPayments] = useState<any | null>([]);
+  const [userData, setUserData] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
+  const [myBids, setMyBids] = useState<any[]>([]);
+  const [activeProjects, setActiveProjects] = useState<any[]>([]);
+  const [completedProjects, setCompletedProjects] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterCategory, setFilterCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,7 +60,7 @@ const FreelancerDashboard = () => {
       setLoading(true);
 
       // Fetch user data with university info
-      const { data: user } = await supabase
+      const { data: user } = await (supabase as any)
         .from("users")
         .select(
           `
@@ -72,14 +72,14 @@ const FreelancerDashboard = () => {
         .single();
 
       // Fetch freelancer profile
-      const { data: profileData } = await supabase
+      const { data: profileData } = await (supabase as any)
         .from("profiles")
         .select("*")
         .eq("user_id", currentUserId)
         .single();
 
       // Fetch available projects (matching user's university)
-      const { data: projects } = await supabase
+      const { data: projects } = await (supabase as any)
         .from("projects")
         .select(
           `
@@ -91,7 +91,7 @@ const FreelancerDashboard = () => {
         .order("created_at", { ascending: false });
 
       // Fetch user's bids with project info
-      const { data: bids } = await supabase
+      const { data: bids } = await (supabase as any)
         .from("bids")
         .select(
           `
@@ -103,7 +103,7 @@ const FreelancerDashboard = () => {
         .order("created_at", { ascending: false });
 
       // Fetch active projects (where user has accepted bid)
-      const { data: active } = await supabase
+      const { data: active } = await (supabase as any)
         .from("projects")
         .select(
           `
@@ -117,7 +117,7 @@ const FreelancerDashboard = () => {
         .eq("status", "in_progress");
 
       // Fetch completed projects with reviews
-      const { data: completed } = await supabase
+      const { data: completed } = await (supabase as any)
         .from("projects")
         .select(
           `
@@ -132,7 +132,7 @@ const FreelancerDashboard = () => {
         .eq("status", "completed");
 
       // Fetch payments
-      const { data: paymentsData } = await supabase
+      const { data: paymentsData } = await (supabase as any)
         .from("payments")
         .select(
           `
@@ -140,7 +140,7 @@ const FreelancerDashboard = () => {
           projects (title)
         `
         )
-        .in("project_id", completed?.map((p) => p.id) || [])
+        .in("project_id", completed?.map((p: any) => p.id) || [])
         .order("released_at", { ascending: false });
 
       setUserData(user);
@@ -157,20 +157,20 @@ const FreelancerDashboard = () => {
     }
   };
 
-  const handleBidSubmit = async (projectId: any) => {
+  const handleBidSubmit = async (projectId: string | number) => {
     // In a real app, this would open a modal for bid submission
     alert(`Bid submission for project ${projectId} - implement modal here`);
   };
 
-  const formatCurrency = (cents: any) => {
+  const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
     }).format(cents / 100);
   };
 
-  const getStatusColor = (status: any) => {
-    const colors = {
+  const getStatusColor = (status: string) => {
+    const colors: { [key: string]: string } = {
       pending: "bg-yellow-100 text-yellow-800",
       accepted: "bg-green-100 text-green-800",
       rejected: "bg-red-100 text-red-800",
@@ -255,11 +255,10 @@ const FreelancerDashboard = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
+                  className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm ${activeTab === tab.id
                       ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <IconComponent className="w-4 h-4" />
                   <span>{tab.label}</span>
@@ -302,7 +301,7 @@ const FreelancerDashboard = () => {
                       Pending Bids
                     </p>
                     <p className="text-2xl font-semibold text-gray-900">
-                      {myBids.filter((b) => b.status === "pending").length}
+                      {myBids.filter((b: any) => b.status === "pending").length}
                     </p>
                   </div>
                 </div>
@@ -337,7 +336,7 @@ const FreelancerDashboard = () => {
                       {formatCurrency(
                         payments
                           .filter((p: any) => p.status === "released")
-                          .reduce((sum: any, p: any) => sum + p.amount, 0)
+                          .reduce((sum: number, p: any) => sum + p.amount, 0)
                       )}
                     </p>
                   </div>
@@ -354,7 +353,7 @@ const FreelancerDashboard = () => {
                 <div>
                   <h4 className="font-medium text-gray-700 mb-2">Skills</h4>
                   <div className="flex flex-wrap gap-2">
-                    {profile?.skills?.map((skill: any, index: any) => (
+                    {profile?.skills?.map((skill: string, index: number) => (
                       <span
                         key={index}
                         className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
@@ -422,7 +421,7 @@ const FreelancerDashboard = () => {
 
             {/* Available Projects List */}
             <div className="space-y-4">
-              {filteredProjects.map((project) => (
+              {filteredProjects.map((project: any) => (
                 <div
                   key={project.id}
                   className="bg-white rounded-lg shadow p-6"
@@ -467,8 +466,6 @@ const FreelancerDashboard = () => {
                     <Dialog>
                       <DialogTrigger>
                         <Button>Submit Bid</Button>
-                        {/* <button className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"> */}
-                        {/* </button> */}
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
@@ -498,7 +495,7 @@ const FreelancerDashboard = () => {
         {activeTab === "bids" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-gray-900">My Bids</h2>
-            {myBids.map((bid) => (
+            {myBids.map((bid: any) => (
               <div key={bid.id} className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -538,7 +535,7 @@ const FreelancerDashboard = () => {
             <h2 className="text-2xl font-bold text-gray-900">
               Active Projects
             </h2>
-            {activeProjects.map((project) => (
+            {activeProjects.map((project: any) => (
               <div key={project.id} className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -585,7 +582,7 @@ const FreelancerDashboard = () => {
             <h2 className="text-2xl font-bold text-gray-900">
               Completed Projects
             </h2>
-            {completedProjects.map((project) => (
+            {completedProjects.map((project: any) => (
               <div key={project.id} className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -620,11 +617,10 @@ const FreelancerDashboard = () => {
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
-                                className={`w-4 h-4 ${
-                                  i < project.reviews[0].rating
+                                className={`w-4 h-4 ${i < project.reviews[0].rating
                                     ? "text-yellow-400 fill-current"
                                     : "text-gray-300"
-                                }`}
+                                  }`}
                               />
                             ))}
                           </div>
@@ -658,8 +654,8 @@ const FreelancerDashboard = () => {
                   <p className="text-2xl font-bold text-green-600">
                     {formatCurrency(
                       payments
-                        .filter((p) => p.status === "released")
-                        .reduce((sum, p) => sum + p.amount, 0)
+                        .filter((p: any) => p.status === "released")
+                        .reduce((sum: number, p: any) => sum + p.amount, 0)
                     )}
                   </p>
                 </div>
@@ -668,8 +664,8 @@ const FreelancerDashboard = () => {
                   <p className="text-2xl font-bold text-yellow-600">
                     {formatCurrency(
                       payments
-                        .filter((p) => p.status === "held_in_escrow")
-                        .reduce((sum, p) => sum + p.amount, 0)
+                        .filter((p: any) => p.status === "held_in_escrow")
+                        .reduce((sum: number, p: any) => sum + p.amount, 0)
                     )}
                   </p>
                 </div>
@@ -677,7 +673,7 @@ const FreelancerDashboard = () => {
                   <h3 className="font-medium text-blue-800">Total Earned</h3>
                   <p className="text-2xl font-bold text-blue-600">
                     {formatCurrency(
-                      payments.reduce((sum, p) => sum + p.amount, 0)
+                      payments.reduce((sum: number, p: any) => sum + p.amount, 0)
                     )}
                   </p>
                 </div>
@@ -691,7 +687,7 @@ const FreelancerDashboard = () => {
                 </h3>
               </div>
               <div className="divide-y divide-gray-200">
-                {payments.map((payment) => (
+                {payments.map((payment: any) => (
                   <div key={payment.id} className="p-6">
                     <div className="flex justify-between items-center">
                       <div>
@@ -701,8 +697,8 @@ const FreelancerDashboard = () => {
                         <p className="text-sm text-gray-500">
                           {payment.released_at
                             ? `Released on ${new Date(
-                                payment.released_at
-                              ).toLocaleDateString()}`
+                              payment.released_at
+                            ).toLocaleDateString()}`
                             : "Held in escrow"}
                         </p>
                       </div>

@@ -37,14 +37,14 @@ const ClientDashboard = () => {
 
   // State management
   const [activeTab, setActiveTab] = useState("overview");
-  const [myProjects, setMyProjects] = useState([]);
-  const [activeBids, setActiveBids] = useState([]);
-  const [completedProjects, setCompletedProjects] = useState([]);
-  const [messages, setMessages] = useState([]);
+  const [myProjects, setMyProjects] = useState<any[]>([]);
+  const [activeBids, setActiveBids] = useState<any[]>([]);
+  const [completedProjects, setCompletedProjects] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
   const [showBidsModal, setShowBidsModal] = useState(false);
-  const [projectBids, setProjectBids] = useState([]);
+  const [projectBids, setProjectBids] = useState<any[]>([]);
   const [filterStatus, setFilterStatus] = useState("all");
 
   const currentUserId = userProfile?.id;
@@ -57,7 +57,7 @@ const ClientDashboard = () => {
       setLoading(true);
 
       // Fetch client's projects
-      const { data: projects, error: projectsError } = await supabase
+      const { data: projects, error: projectsError } = await (supabase as any)
         .from("projects")
         .select(
           `
@@ -75,9 +75,9 @@ const ClientDashboard = () => {
       }
 
       // Fetch active bids for client's projects
-      const projectIds = projects?.map((p) => p.id) || [];
+      const projectIds = projects?.map((p: any) => p.id) || [];
       if (projectIds.length > 0) {
-        const { data: bids, error: bidsError } = await supabase
+        const { data: bids, error: bidsError } = await (supabase as any)
           .from("bids")
           .select(
             `
@@ -98,10 +98,10 @@ const ClientDashboard = () => {
         // Fetch recent messages for active projects
         const activeProjectIds =
           projects
-            ?.filter((p) => p.status === "in_progress")
-            .map((p) => p.id) || [];
+            ?.filter((p: any) => p.status === "in_progress")
+            .map((p: any) => p.id) || [];
         if (activeProjectIds.length > 0) {
-          const { data: messagesData, error: messagesError } = await supabase
+          const { data: messagesData, error: messagesError } = await (supabase as any)
             .from("messages")
             .select(
               `
@@ -127,9 +127,9 @@ const ClientDashboard = () => {
   };
 
   // Fetch bids for a specific project
-  const fetchProjectBids = async (projectId) => {
+  const fetchProjectBids = async (projectId: string | number) => {
     try {
-      const { data: bids, error } = await supabase
+      const { data: bids, error } = await (supabase as any)
         .from("bids")
         .select(
           `
@@ -154,11 +154,11 @@ const ClientDashboard = () => {
   };
 
   // Handle accepting a bid
-  const handleAcceptBid = async (bidId, projectId) => {
+  const handleAcceptBid = async (bidId: string | number, projectId: string | number) => {
     try {
       // Start a transaction-like operation
       // 1. Update the accepted bid status
-      const { error: bidError } = await supabase
+      const { error: bidError } = await (supabase as any)
         .from("bids")
         .update({ status: "accepted" })
         .eq("id", bidId);
@@ -166,7 +166,7 @@ const ClientDashboard = () => {
       if (bidError) throw bidError;
 
       // 2. Reject all other bids for this project
-      const { error: rejectError } = await supabase
+      const { error: rejectError } = await (supabase as any)
         .from("bids")
         .update({ status: "rejected" })
         .eq("project_id", projectId)
@@ -175,7 +175,7 @@ const ClientDashboard = () => {
       if (rejectError) throw rejectError;
 
       // 3. Update project status to in_progress
-      const { error: projectError } = await supabase
+      const { error: projectError } = await (supabase as any)
         .from("projects")
         .update({ status: "in_progress" })
         .eq("id", projectId);
@@ -194,9 +194,9 @@ const ClientDashboard = () => {
   };
 
   // Handle rejecting a bid
-  const handleRejectBid = async (bidId, projectId) => {
+  const handleRejectBid = async (bidId: string | number, projectId: string | number) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("bids")
         .update({ status: "rejected" })
         .eq("id", bidId);
@@ -212,9 +212,9 @@ const ClientDashboard = () => {
   };
 
   // Handle project completion
-  const handleCompleteProject = async (projectId) => {
+  const handleCompleteProject = async (projectId: string | number) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("projects")
         .update({ status: "completed" })
         .eq("id", projectId);
@@ -230,7 +230,7 @@ const ClientDashboard = () => {
   };
 
   // Navigate to chat
-  const handleStartChat = (projectId) => {
+  const handleStartChat = (projectId: string | number) => {
     router.push(`/chat/${projectId}`);
   };
 
@@ -240,7 +240,7 @@ const ClientDashboard = () => {
     }
   }, [authLoading, currentUserId, userProfile]);
 
-  const formatCurrency = (cents) => {
+  const formatCurrency = (cents: number) => {
     if (!cents || isNaN(cents)) return "$0.00";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -248,7 +248,7 @@ const ClientDashboard = () => {
     }).format(cents / 100);
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
     try {
       return new Date(dateString).toLocaleDateString("en-US", {
@@ -261,8 +261,8 @@ const ClientDashboard = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
+  const getStatusColor = (status: string) => {
+    const colors: { [key: string]: string } = {
       open: "bg-blue-100 text-blue-800",
       in_progress: "bg-yellow-100 text-yellow-800",
       completed: "bg-green-100 text-green-800",
@@ -274,20 +274,19 @@ const ClientDashboard = () => {
     return colors[status] || "bg-gray-100 text-gray-800";
   };
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`w-4 h-4 ${
-          i < Math.floor(rating)
+        className={`w-4 h-4 ${i < Math.floor(rating)
             ? "fill-current text-yellow-500"
             : "text-gray-300"
-        }`}
+          }`}
       />
     ));
   };
 
-  const filteredProjects = myProjects.filter((project) => {
+  const filteredProjects = myProjects.filter((project: any) => {
     return filterStatus === "all" || project.status === filterStatus;
   });
 
@@ -379,11 +378,10 @@ const ClientDashboard = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
+                  className={`flex items-center space-x-2 py-4 border-b-2 font-medium text-sm ${activeTab === tab.id
                       ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                    }`}
                 >
                   <IconComponent className="w-4 h-4" />
                   <span>{tab.label}</span>
@@ -427,7 +425,7 @@ const ClientDashboard = () => {
                     </p>
                     <p className="text-2xl font-semibold text-gray-900">
                       {
-                        myProjects.filter((p) => p.status === "in_progress")
+                        myProjects.filter((p: any) => p.status === "in_progress")
                           .length
                       }
                     </p>
@@ -462,7 +460,7 @@ const ClientDashboard = () => {
                     </p>
                     <p className="text-2xl font-semibold text-gray-900">
                       {
-                        myProjects.filter((p) => p.status === "completed")
+                        myProjects.filter((p: any) => p.status === "completed")
                           .length
                       }
                     </p>
@@ -479,7 +477,7 @@ const ClientDashboard = () => {
                   Recent Projects
                 </h3>
                 <div className="space-y-3">
-                  {myProjects.slice(0, 3).map((project) => (
+                  {myProjects.slice(0, 3).map((project: any) => (
                     <div
                       key={project.id}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -510,7 +508,7 @@ const ClientDashboard = () => {
                   Recent Bids
                 </h3>
                 <div className="space-y-3">
-                  {activeBids.slice(0, 3).map((bid) => (
+                  {activeBids.slice(0, 3).map((bid: any) => (
                     <div
                       key={bid.id}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -572,7 +570,7 @@ const ClientDashboard = () => {
 
             {/* Projects List */}
             <div className="space-y-4">
-              {filteredProjects.map((project) => (
+              {filteredProjects.map((project: any) => (
                 <div
                   key={project.id}
                   className="bg-white rounded-lg shadow p-6"
@@ -611,7 +609,7 @@ const ClientDashboard = () => {
                           <Users className="w-4 h-4" />
                           {
                             activeBids.filter(
-                              (b) => b.project_id === project.id
+                              (b: any) => b.project_id === project.id
                             ).length
                           }{" "}
                           bids
@@ -631,7 +629,7 @@ const ClientDashboard = () => {
                           View Bids (
                           {
                             activeBids.filter(
-                              (b) => b.project_id === project.id
+                              (b: any) => b.project_id === project.id
                             ).length
                           }
                           )
@@ -664,7 +662,7 @@ const ClientDashboard = () => {
         {activeTab === "bids" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-gray-900">Active Bids</h2>
-            {activeBids.map((bid) => (
+            {activeBids.map((bid: any) => (
               <div key={bid.id} className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -700,7 +698,7 @@ const ClientDashboard = () => {
                     </div>
                     <p className="text-gray-600 mb-3">{bid.proposal_text}</p>
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {bid.profiles?.skills?.map((skill, index) => (
+                      {bid.profiles?.skills?.map((skill: string, index: number) => (
                         <span
                           key={index}
                           className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
@@ -751,7 +749,7 @@ const ClientDashboard = () => {
             <h2 className="text-2xl font-bold text-gray-900">
               Recent Messages
             </h2>
-            {messages.map((message) => (
+            {messages.map((message: any) => (
               <div key={message.id} className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -811,7 +809,7 @@ const ClientDashboard = () => {
 
               <div className="overflow-y-auto max-h-[70vh] p-6">
                 <div className="space-y-4">
-                  {projectBids.map((bid) => (
+                  {projectBids.map((bid: any) => (
                     <div
                       key={bid.id}
                       className="border border-gray-200 rounded-lg p-6"
@@ -873,7 +871,7 @@ const ClientDashboard = () => {
                               Skills:
                             </span>
                             <div className="flex flex-wrap gap-2 mt-1">
-                              {bid.profiles?.skills?.map((skill, index) => (
+                              {bid.profiles?.skills?.map((skill: string, index: number) => (
                                 <span
                                   key={index}
                                   className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"

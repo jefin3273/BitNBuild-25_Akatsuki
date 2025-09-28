@@ -49,7 +49,7 @@ export class EscrowService {
             console.log('Stripe payment intent created:', paymentIntent.id);
 
             // Store in database
-            const { data: escrowPayment, error } = await supabase
+            const { data: escrowPayment, error } = await (supabase as any)
                 .from('escrow_payments')
                 .insert({
                     project_id: data.projectId,
@@ -87,7 +87,7 @@ export class EscrowService {
 
             if (paymentIntent.status === 'requires_capture') {
                 // Update status to held
-                const { data, error } = await supabase
+                const { data, error } = await (supabase as any)
                     .from('escrow_payments')
                     .update({
                         status: 'held',
@@ -113,7 +113,7 @@ export class EscrowService {
     static async releasePayment(escrowPaymentId: number, clientId: number) {
         try {
             // Get escrow payment
-            const { data: escrowPayment, error: fetchError } = await supabase
+            const { data: escrowPayment, error: fetchError } = await (supabase as any)
                 .from('escrow_payments')
                 .select('*')
                 .eq('id', escrowPaymentId)
@@ -132,7 +132,7 @@ export class EscrowService {
             await stripe.paymentIntents.capture(escrowPayment.stripe_payment_intent_id);
 
             // Update status to released
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('escrow_payments')
                 .update({
                     status: 'released',
@@ -146,7 +146,7 @@ export class EscrowService {
             if (error) throw error;
 
             // Update project status
-            await supabase
+            await (supabase as any)
                 .from('projects')
                 .update({ status: 'approved' })
                 .eq('id', escrowPayment.project_id);
@@ -161,7 +161,7 @@ export class EscrowService {
     // Refund payment (for disputes or cancellations)
     static async refundPayment(escrowPaymentId: number, reason?: string) {
         try {
-            const { data: escrowPayment, error: fetchError } = await supabase
+            const { data: escrowPayment, error: fetchError } = await (supabase as any)
                 .from('escrow_payments')
                 .select('*')
                 .eq('id', escrowPaymentId)
@@ -179,7 +179,7 @@ export class EscrowService {
             await stripe.paymentIntents.cancel(escrowPayment.stripe_payment_intent_id);
 
             // Update status
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('escrow_payments')
                 .update({
                     status: 'refunded',
@@ -200,7 +200,7 @@ export class EscrowService {
 
     // Get escrow payment by project ID
     static async getEscrowByProjectId(projectId: string): Promise<EscrowPayment | null> {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('escrow_payments')
             .select('*')
             .eq('project_id', projectId)

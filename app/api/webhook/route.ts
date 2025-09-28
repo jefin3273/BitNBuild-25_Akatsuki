@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
                 const pi = event.data.object as Stripe.PaymentIntent;
 
                 // Update status to released if already captured
-                const { error } = await supabase
+                const { error } = await (supabase as any)
                     .from('escrow_payments')
                     .update({ status: 'released', updated_at: new Date().toISOString() })
                     .eq('stripe_payment_intent_id', pi.id);
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
             case 'payment_intent.payment_failed': {
                 const pi = event.data.object as Stripe.PaymentIntent;
 
-                const { error } = await supabase
+                const { error } = await (supabase as any)
                     .from('escrow_payments')
                     .update({ status: 'failed', updated_at: new Date().toISOString() })
                     .eq('stripe_payment_intent_id', pi.id);
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
             case 'payment_intent.canceled': {
                 const pi = event.data.object as Stripe.PaymentIntent;
 
-                const { error } = await supabase
+                const { error } = await (supabase as any)
                     .from('escrow_payments')
                     .update({ status: 'canceled', updated_at: new Date().toISOString() })
                     .eq('stripe_payment_intent_id', pi.id);
