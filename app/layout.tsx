@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "GigCampus",
+  manifest: "/manifest.json",
   description: "Join the Future of Work",
 };
 

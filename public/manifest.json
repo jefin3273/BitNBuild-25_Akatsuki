@@ -1,0 +1,24 @@
+{
+  "name": "GigCampus",
+  "short_name": "gigcampus",
+  "description": "Join the future of work",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "dashboard.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "dashboard.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "dashboard.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
