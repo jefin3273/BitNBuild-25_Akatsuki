@@ -15,13 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const menuItems = [
-  { name: "Features", href: "/#features" },
-  { name: "Solution", href: "/" },
-  { name: "Profile", href: "/profile" },
-  { name: "About", href: "/#about" },
-];
-
 export const HeroHeader = () => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -31,7 +24,7 @@ export const HeroHeader = () => {
   React.useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
-    };
+    }
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -48,6 +41,14 @@ export const HeroHeader = () => {
       router.push("/freelancer-dashboard");
     }
   };
+
+  const menuItems = [
+    { name: "Features", href: "/#features" },
+    { name: "Solution", href: "/" },
+    { name: "Profile", onClick: handleDashboardRedirect }, // run function instead of href
+    { name: "About", href: "/about" },
+  ];
+
 
   if (loading) {
     return (
@@ -105,111 +106,103 @@ export const HeroHeader = () => {
               <ul className="flex gap-8 text-sm">
                 {menuItems.map((item, index) => (
                   <li key={index}>
-                    <Link
-                      href={item.href}
-                      className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                    >
-                      <span>{item.name}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-background in-data-[state=active]:block lg:in-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
-              <div className="lg:hidden">
-                <ul className="space-y-6 text-base">
-                  {menuItems.map((item, index) => (
-                    <li key={index}>
+                    {item.href ? (
                       <Link
                         href={item.href}
                         className="text-muted-foreground hover:text-accent-foreground block duration-150"
                       >
                         <span>{item.name}</span>
                       </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                {user ? (
-                  // Signed In
-                  <div className="flex gap-3">
-                    <div className={cn(isScrolled && "lg:hidden")}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleDashboardRedirect}
+                    ) : (
+                      <button
+                        onClick={item.onClick}
+                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
                       >
-                        Dashboard
-                      </Button>
-                    </div>
+                        <span>{item.name}</span>
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="p-2">
-                          <User className="h-4 w-4" />
-                          <span className="ml-2 hidden sm:inline">
-                            {profile?.name || user.email}
-                          </span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
-                        <div className="flex flex-col space-y-1 p-2">
-                          <p className="text-sm font-medium">{profile?.name}</p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
-                          <p className="text-xs bg-muted px-2 py-1 rounded capitalize">
-                            {profile?.role}
-                          </p>
-                        </div>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleDashboardRedirect}>
-                          Dashboard
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/profile">Profile</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleSignOut}>
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Sign out
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ) : (
-                  // Signed Out
-                  <>
+            <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+              {user ? (
+                // Signed In
+                <div className="flex gap-3">
+                  <div className={cn(isScrolled && "lg:hidden")}>
                     <Button
-                      asChild
                       variant="outline"
                       size="sm"
-                      className={cn(isScrolled && "lg:hidden")}
+                      onClick={handleDashboardRedirect}
                     >
-                      <Link href="/auth/signin">Sign In</Link>
+                      Dashboard
                     </Button>
-                    <Button
-                      asChild
-                      size="sm"
-                      className={cn(isScrolled && "lg:hidden")}
-                    >
-                      <Link href="/auth/signup">Sign Up</Link>
-                    </Button>
-                    <Button
-                      asChild
-                      size="sm"
-                      className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
-                    >
-                      <Link href="/auth/signin">Sign In</Link>
-                    </Button>
-                  </>
-                )}
-              </div>
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="p-2">
+                        <User className="h-4 w-4" />
+                        <span className="ml-2 hidden sm:inline">
+                          {profile?.name || user.email}
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <div className="flex flex-col space-y-1 p-2">
+                        <p className="text-sm font-medium">{profile?.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                        <p className="text-xs bg-muted px-2 py-1 rounded capitalize">
+                          {profile?.role}
+                        </p>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleDashboardRedirect}>
+                        Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile">Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleSignOut}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ) : (
+                // Signed Out
+                <>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className={cn(isScrolled && "lg:hidden")}
+                  >
+                    <Link href="/auth/signin">Sign In</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className={cn(isScrolled && "lg:hidden")}
+                  >
+                    <Link href="/auth/signup">Sign Up</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
+                  >
+                    <Link href="/auth/signin">Sign In</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
       </nav>
-    </header>
+    </header >
   );
 };
