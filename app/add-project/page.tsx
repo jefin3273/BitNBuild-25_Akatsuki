@@ -135,11 +135,7 @@ const AddProject: React.FC = () => {
       const { data, error: insertError } = await supabase
         .from('projects')
         .insert({
-<<<<<<< HEAD
-          client_id: parseInt(currentUserProfile.id), // Use current user's ID as integer
-=======
           client_id: currentUserProfile.id,
->>>>>>> bcb7121c651eb5d5df9cd206339eb90317ae2d21
           title: formData.title.trim(),
           description: formData.description.trim(),
           category: formData.category,
@@ -379,8 +375,7 @@ const AddProject: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  <DollarSign className="w-4 h-4 inline-block mr-2" />
-                  Minimum Budget ($) *
+                  Minimum Budget (₹)
                 </label>
                 <input
                   type="number"
@@ -400,7 +395,7 @@ const AddProject: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Maximum Budget ($) *
+                  Maximum Budget (₹)
                 </label>
                 <input
                   type="number"
@@ -423,10 +418,8 @@ const AddProject: React.FC = () => {
             {formData.budget_min > 0 && formData.budget_max > 0 && formData.budget_min < formData.budget_max && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-blue-800 text-sm">
-                  <strong>Budget Range:</strong> ${formData.budget_min.toLocaleString()} - ${formData.budget_max.toLocaleString()}
-                  <span className="text-blue-600 ml-2">
-                    (stored as {(formData.budget_min * 100).toLocaleString()} - {(formData.budget_max * 100).toLocaleString()} cents)
-                  </span>
+                  <strong>Budget Range:</strong> ₹{formData.budget_min.toLocaleString()} - ₹{formData.budget_max.toLocaleString()}
+                  
                 </p>
               </div>
             )}
