@@ -357,7 +357,7 @@ const AddProject: React.FC = () => {
               <textarea
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={6}
+                rows={6}  
                 className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${errors.description ? 'border-red-300' : 'border-border'
                   }`}
                 placeholder="Describe your project in detail. Include requirements, expectations, deliverables, and any specific skills needed..."
