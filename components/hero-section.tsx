@@ -91,7 +91,7 @@ export default function HeroSection() {
                     className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950"
                   >
                     <span className="text-foreground text-sm">
-                      Introducing Support for AI Models
+                      Join the new revoltion of freelancing{" "}
                     </span>
                     <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
 
@@ -124,8 +124,9 @@ export default function HeroSection() {
                   as="p"
                   className="mx-auto mt-8 max-w-2xl text-balance text-lg"
                 >
-                  Highly customizable components for building modern websites
-                  and applications that look and feel the way you mean it.
+                  From ambitious freelancers to forward-thinking businesses,
+                  GigCampus connects students with real opportunities right on
+                  campus and beyond.
                 </TextEffect>
 
                 <AnimatedGroup
@@ -302,21 +303,22 @@ export default function HeroSection() {
           <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-12">
             <div className="relative z-10 max-w-xl space-y-6">
               <h2 className="text-4xl font-medium lg:text-5xl">
-                The Gemini ecosystem brings together our models.
+                The GigCampus ecosystem brings students and opportunities
+                together{" "}
               </h2>
               <p>
-                Gemini is evolving to be more than just the models.{" "}
+                GigCampus isn&apos;t just a marketplace.{" "}
                 <span className="font-medium">
-                  It supports an entire ecosystem
+                  It&apos;s a self-sustaining ecosystem
                 </span>{" "}
-                — from products innovate.
+                where students gain experience, clients find talent, and
+                communities grow.
               </p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 md:gap-12 lg:gap-24">
+            <div className="grid gap-4 sm:grid-cols-2 md:gap-12 lg:gap-24">
               <div>
                 <p>
-                  It supports an entire ecosystem — from products to the APIs
-                  and platforms helping developers and businesses innovate
+                  It supports an entire ecosystem from gigs to payments and portfolios, helping students grow and businesses collaborate.
                 </p>
                 <div className="mb-12 mt-12 grid grid-cols-2 gap-2 md:mb-0">
                   <div className="space-y-4">

@@ -27,7 +27,7 @@ const values = [
 export function CoreValues() {
   return (
     <section aria-labelledby="core-values-heading" className="w-full border-b bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-12 lg:py-16">
+      <div className="mx-auto max-w-7xl px-8 py-12 lg:py-16">
         <div className="mb-8">
           <h2
             id="core-values-heading"

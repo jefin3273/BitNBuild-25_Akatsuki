@@ -19,7 +19,7 @@ function initials(name: string) {
 export function Team() {
   return (
     <section aria-labelledby="team-heading" className="w-full border-b bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-12 lg:py-16">
+      <div className="mx-auto max-w-7xl px-8 py-12 lg:py-16">
         <div className="mb-8">
           <h2
             id="team-heading"
@@ -36,7 +36,7 @@ export function Team() {
           {team.map((member) => (
             <li key={member.name} className="flex flex-col items-center rounded-lg border bg-card p-6">
               <Avatar className="h-16 w-16">
-                <AvatarImage src="/team-member-avatar.jpg" alt={`Avatar of ${member.name}`} />
+                <AvatarImage src="/boyavatar.png" alt={`Avatar of ${member.name}`} />
                 <AvatarFallback aria-hidden className="font-medium">
                   {initials(member.name)}
                 </AvatarFallback>

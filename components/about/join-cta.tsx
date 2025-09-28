@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 export function JoinCta() {
   return (
     <section aria-labelledby="join-heading" className="w-full bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-12 lg:py-16">
+      <div className="mx-auto max-w-7xl px-8 py-12 lg:py-16">
         <div className="rounded-lg border bg-card p-8 md:p-10">
           <h2
             id="join-heading"
