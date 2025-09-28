@@ -1,13 +1,14 @@
 "use client"
 import React, { useState } from 'react'
-import {
-  DollarSign,
-  Calendar,
-  FileText,
-  Tag,
+import { 
+  DollarSign, 
+  Calendar, 
+  FileText, 
+  Tag, 
   Clock,
   CheckCircle,
   AlertCircle,
+  ArrowLeft,
   Send,
   Shield,
   UserX
@@ -27,7 +28,7 @@ interface ProjectFormData {
 
 const AddProject: React.FC = () => {
   const { user: currentAuthUser, profile: currentUserProfile, loading: authLoading } = useAuth()
-
+  
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +42,7 @@ const AddProject: React.FC = () => {
     deadline: ''
   })
 
-  const [errors, setErrors] = useState<Partial<Record<keyof ProjectFormData, string>>>({})
+  const [errors, setErrors] = useState<Partial<ProjectFormData>>({})
 
   // Category options
   const categories = [
@@ -70,7 +71,7 @@ const AddProject: React.FC = () => {
 
   // Validate form
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof ProjectFormData, string>> = {}
+    const newErrors: Partial<ProjectFormData> = {}
 
     if (!formData.title.trim()) {
       newErrors.title = 'Project title is required'
@@ -102,7 +103,7 @@ const AddProject: React.FC = () => {
       const deadlineDate = new Date(formData.deadline)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-
+      
       if (deadlineDate <= today) {
         newErrors.deadline = 'Deadline must be in the future'
       }
@@ -152,7 +153,7 @@ const AddProject: React.FC = () => {
 
       console.log('Project created successfully:', data)
       setSuccess(true)
-
+      
       // Reset form after success
       setTimeout(() => {
         setFormData({
@@ -168,11 +169,7 @@ const AddProject: React.FC = () => {
 
     } catch (err) {
       console.error('Error creating project:', err)
-      setError(
-        typeof err === 'object' && err !== null && 'message' in err
-          ? String((err as { message?: string }).message)
-          : 'Failed to create project. Please try again.'
-      )
+      setError(err.message || 'Failed to create project. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -313,8 +310,9 @@ const AddProject: React.FC = () => {
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.title ? 'border-red-300' : 'border-border'
-                  }`}
+                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                  errors.title ? 'border-red-300' : 'border-border'
+                }`}
                 placeholder="e.g., Build a responsive website for my startup"
                 maxLength={100}
               />
@@ -336,10 +334,11 @@ const AddProject: React.FC = () => {
                 {categories.map((category) => (
                   <div
                     key={category.value}
-                    className={`flex flex-col p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${formData.category === category.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-border'
-                      }`}
+                    className={`flex flex-col p-4 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${
+                      formData.category === category.value
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-border'
+                    }`}
                     onClick={() => handleInputChange('category', category.value)}
                   >
                     <span className="font-medium text-foreground">{category.label}</span>
@@ -358,8 +357,9 @@ const AddProject: React.FC = () => {
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={6}
-                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${errors.description ? 'border-red-300' : 'border-border'
-                  }`}
+                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${
+                  errors.description ? 'border-red-300' : 'border-border'
+                }`}
                 placeholder="Describe your project in detail. Include requirements, expectations, deliverables, and any specific skills needed..."
                 maxLength={2000}
               />
@@ -375,8 +375,7 @@ const AddProject: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  <DollarSign className="w-4 h-4 inline-block mr-2" />
-                  Minimum Budget ($) *
+                  Minimum Budget (₹)
                 </label>
                 <input
                   type="number"
@@ -384,8 +383,9 @@ const AddProject: React.FC = () => {
                   max="10000"
                   value={formData.budget_min || ''}
                   onChange={(e) => handleInputChange('budget_min', parseInt(e.target.value) || 0)}
-                  className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.budget_min ? 'border-red-300' : 'border-border'
-                    }`}
+                  className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.budget_min ? 'border-red-300' : 'border-border'
+                  }`}
                   placeholder="50"
                 />
                 {errors.budget_min && (
@@ -395,7 +395,7 @@ const AddProject: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Maximum Budget ($) *
+                  Maximum Budget (₹)
                 </label>
                 <input
                   type="number"
@@ -403,8 +403,9 @@ const AddProject: React.FC = () => {
                   max="10000"
                   value={formData.budget_max || ''}
                   onChange={(e) => handleInputChange('budget_max', parseInt(e.target.value) || 0)}
-                  className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.budget_max ? 'border-red-300' : 'border-border'
-                    }`}
+                  className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.budget_max ? 'border-red-300' : 'border-border'
+                  }`}
                   placeholder="200"
                 />
                 {errors.budget_max && (
@@ -417,10 +418,8 @@ const AddProject: React.FC = () => {
             {formData.budget_min > 0 && formData.budget_max > 0 && formData.budget_min < formData.budget_max && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-blue-800 text-sm">
-                  <strong>Budget Range:</strong> ${formData.budget_min.toLocaleString()} - ${formData.budget_max.toLocaleString()}
-                  <span className="text-blue-600 ml-2">
-                    (stored as {(formData.budget_min * 100).toLocaleString()} - {(formData.budget_max * 100).toLocaleString()} cents)
-                  </span>
+                  <strong>Budget Range:</strong> ₹{formData.budget_min.toLocaleString()} - ₹{formData.budget_max.toLocaleString()}
+                  
                 </p>
               </div>
             )}
@@ -436,8 +435,9 @@ const AddProject: React.FC = () => {
                 value={formData.deadline}
                 onChange={(e) => handleInputChange('deadline', e.target.value)}
                 min={getMinDate()}
-                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.deadline ? 'border-red-300' : 'border-border'
-                  }`}
+                className={`w-full px-4 py-3 border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                  errors.deadline ? 'border-red-300' : 'border-border'
+                }`}
               />
               {errors.deadline && (
                 <p className="text-red-500 text-sm mt-1">{errors.deadline}</p>
